@@ -20,10 +20,10 @@
         .target-box label { font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
         .target-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .scroll-x { overflow-x: auto; margin-top: 10px; border: 1px solid #ddd; background: #fff; }
-        table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 0.9rem; }
-        th, td { border: 1px solid #eee; padding: 10px 5px; text-align: center; }
+        table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 0.9rem; table-layout: auto; }
+        th, td { border: 1px solid #eee; padding: 8px 2px; text-align: center; }
         th { background: #f8f9fa; }
-        .row-label { text-align: left; font-weight: bold; padding-left: 10px; background: #fafafa; width: 120px; }
+        .row-label { text-align: left; font-weight: bold; padding-left: 10px; background: #fafafa; width: 110px; }
         input[type="number"] { width: 80%; padding: 5px; border: 1px solid #ddd; border-radius: 3px; text-align: right; }
         #inventory-body tr:nth-child(even), #inventory-body tr:nth-child(even) .row-label { background-color: #fffde7; }
         .btn-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
@@ -41,7 +41,6 @@
         .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
         .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
 
-        /* iPhone Safari用プレビューモーダル */
         #preview-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
         .preview-img-container { background:#fff; padding:10px; border-radius:8px; max-width:95%; max-height:80%; overflow: auto; }
         #preview-img { width: 100%; height: auto; display: block; }
@@ -52,17 +51,23 @@
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
-        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 100%; box-sizing: border-box; }
+        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 840px; box-sizing: border-box; }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
-        .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-weight: bold; font-size: 1.0rem; }
-        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
+        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
 
-        /* キャプチャ時強制スタイル（PC版の横幅をエミュレート） */
-        /* Source 8の見切れに対応するため、幅を1100pxから1200pxに外科的拡張 */
-        .capture-mode { overflow: visible !important; width: 1200px !important; min-width: 1200px !important; position: absolute; left: -9999px; }
-        .capture-mode .scroll-x { overflow: visible !important; width: 100% !important; }
+        @media screen and (max-width: 880px) {
+            .recommendation-area { width: 100%; }
+            .stage-flow { flex-direction: column; align-items: stretch; gap: 8px; }
+            .stage-box { width: 100%; font-size: min(3.8vw, 0.9rem); box-sizing: border-box; display: block; text-align: center; }
+        }
+
+        /* キャプチャ時強制スタイル */
+        .capture-mode { overflow: visible !important; width: 1100px !important; min-width: 1100px !important; position: absolute; left: -9999px; }
+        .capture-mode .recommendation-area { width: 840px !important; }
         .capture-mode .stage-flow { flex-direction: row !important; }
-        .capture-mode .stage-box { width: auto !important; }
+        .capture-mode .stage-box { width: auto !important; font-size: 1.0rem !important; }
+        .capture-mode .scroll-x { overflow: visible !important; }
     </style>
 </head>
 <body>
@@ -185,6 +190,11 @@
             });
             resBody.innerHTML += row + `</tr>`;
         });
+        
+        let htmlDeficit = `<tr class="summary-header"><td class="row-label">T別不足数合計</td>`;
+        TIERS.forEach(t => htmlDeficit += `<td>${tDeficits[t]}</td>`);
+        sumBody.innerHTML += htmlDeficit + `</tr>`;
+
         let boxDiffs = {};
         let htmlFinal = `<tr class="summary-header"><td class="row-label">ボックス考慮後</td>`;
         TIERS.forEach(t => {
@@ -242,9 +252,9 @@
 
     async function generateCanvas() {
         const target = document.getElementById('capture-target');
-        // Source 8の見切れに対応するため、幅を1100pxから1200pxに外科的拡張
         target.classList.add('capture-mode');
-        const options = { backgroundColor: "#ffffff", scale: 2, width: 1200, windowWidth: 1200, useCORS: true };
+        // 画像のおさまりを良くするため、1100px固定でキャプチャ
+        const options = { backgroundColor: "#ffffff", scale: 2, width: 1100, windowWidth: 1100, useCORS: true };
         const canvas = await html2canvas(target, options);
         target.classList.remove('capture-mode');
         return canvas;
