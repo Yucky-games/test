@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- 
+  PROJECT: 装備在庫カンリくん
+  VERSION: 1.3.7 (iOS Optimized & Mobile Responsive)
+  UPDATE: 2026/03/21
+  AUTHOR: ゆっきー & Gemini
+-->
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -45,7 +51,6 @@
 
         #jumon-input-area { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; border: 2px solid #6f42c1; }
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
-        .jumon-help-text { font-size: 0.8rem; color: #666; margin-top: 5px; margin-bottom: 15px; line-height: 1.5; }
 
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -56,7 +61,7 @@
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
-        /* --- 周回提案エリア用デザイン（画像出力バランス調整済み） --- */
+        /* --- 周回提案セクション --- */
         .recommendation-area { 
             margin-top: 20px; 
             padding: 15px; 
@@ -69,10 +74,27 @@
         }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
-        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
 
-        /* キャプチャ時の一時適用スタイル */
-        .capture-mode { overflow: visible !important; width: fit-content !important; min-width: 890px !important; }
+        /* --- スマホ表示用 (画面幅が狭いときのみ適用) --- */
+        @media screen and (max-width: 880px) {
+            .recommendation-area { width: 100%; }
+            .stage-flow { flex-direction: column; align-items: stretch; gap: 8px; }
+            /* 1行に収まらない場合は縮小する */
+            .stage-box { 
+                width: 100%; 
+                font-size: min(3.8vw, 0.9rem); 
+                box-sizing: border-box;
+                display: block;
+                text-align: center;
+            }
+        }
+
+        /* 画像出力用の一時的クラス (常にPC版のワイドレイアウトで出力) */
+        .capture-mode { overflow: visible !important; width: 890px !important; }
+        .capture-mode .recommendation-area { width: 840px !important; }
+        .capture-mode .stage-flow { flex-direction: row !important; }
+        .capture-mode .stage-box { width: auto !important; font-size: 1.0rem !important; }
         .capture-mode .scroll-x { overflow: visible !important; }
     </style>
 </head>
@@ -82,13 +104,8 @@
     <a href="https://x.com/yucky_games" target="_blank" rel="noopener noreferrer" class="credit">made by ゆっきー</a>
     <h1>装備在庫カンリくん</h1>
 
-    <h2>
-        [1] 各装備の目標確保人数を設定
-        <span class="sub-desc">各装備が何人分あればよいか設定します。デフォルトで入っているのはオススメの確保人数です。</span>
-    </h2>
-    <div id="target-inputs" class="grid-targets"></div>
-
-    <h2>[2] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
+    <div id="target-inputs" class="grid-targets" style="display:none;"></div>
+    <h2>[1] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
     <div class="scroll-x">
         <table>
             <thead><tr id="table-head"><th>アイテム</th></tr></thead>
@@ -104,10 +121,6 @@
 
     <div id="jumon-input-area">
         <p class="retro-font" style="margin-top:0; font-size: 1rem; font-weight: bold; color: #6f42c1; margin-bottom: 5px;">「ふっかつのじゅもん」を貼り付けてください</p>
-        <p class="retro-font jumon-help-text">
-            ふっかつのじゅもんとは？<br>
-            「計算＆保存」を実行したあとに発行した「ふっかつのじゅもん」を入力すると、前回の入力内容を復元できます
-        </p>
         <input type="text" id="jumon-text-input" placeholder="ここに英数字列を貼り付け">
         <button class="btn btn-ss" style="width:100%;" onclick="restoreFromJumon()">ふっかつする</button>
     </div>
@@ -138,11 +151,9 @@
 
 <div id="modal-overlay">
     <div class="modal-content">
-        <span class="modal-msg-main">この文字列、またはURLを保存してください。</span>
-        <span class="modal-msg-sub">URLからアクセスするか、「ふっかつのじゅもんを入力する」に入力すれば現在の情報を復元できます。</span>
         <div id="jumon-str" class="jumon-display"></div>
         <div class="btn-container" style="margin-top:0;">
-            <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLをコピー</button>
+            <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLコピー</button>
             <button class="btn btn-copy" style="min-width:120px;" onclick="copyToClipboard('jumon')">じゅもんのみ</button>
             <button class="btn" style="min-width:120px; background:#ccc;" onclick="closeModal()">閉じる</button>
         </div>
@@ -150,6 +161,9 @@
 </div>
 
 <script>
+    /**
+     * 装備在庫カンリくん Ver 1.3.7
+     */
     const EQUIP_LIST = [
         { name: "帽子", def: 3 }, { name: "手袋", def: 2 }, { name: "靴", def: 3 },
         { name: "バッグ", def: 2 }, { name: "バッジ", def: 2 }, { name: "ヘアピン", def: 4 },
@@ -192,7 +206,7 @@
             tableHead.appendChild(th); resultHead.appendChild(th.cloneNode(true));
         });
         EQUIP_LIST.forEach((eq, i) => {
-            targetDiv.innerHTML += `<div class="target-box"><label>${eq.name}</label><input type="number" id="target-${i}" value="${eq.def}" min="0" onfocus="this.select()"></div>`;
+            targetDiv.innerHTML += `<input type="number" id="target-${i}" value="${eq.def}" style="display:none;">`;
             let row = `<tr><td class="row-label">${eq.name}</td>`;
             TIERS.forEach(t => row += `<td><input type="number" id="inv-${i}-${t}" value="0" min="0" onfocus="this.select()"></td>`);
             invBody.innerHTML += row + `</tr>`;
@@ -245,14 +259,6 @@
         generateRoadmap(inventorySnapshot, boxDiffs);
     }
 
-    function parseEquip(s) {
-        let parts = s.split('/');
-        return parts.map(p => {
-            let m = p.trim().match(/T(\d+)(.+)/);
-            return m ? { tier: parseInt(m[1]), name: m[2] } : null;
-        });
-    }
-
     function generateRoadmap(snapshot, boxDiffs) {
         let allItems = snapshot.map(item => {
             let group = 3;
@@ -278,55 +284,57 @@
         let currentRanking = [...ranking];
         let stages = Object.keys(MASTER_STAGE_DATA);
 
+        const parseEq = (s) => s.split('/').map(p => { 
+            let m = p.trim().match(/T(\d+)(.+)/); 
+            return m ? { tier: parseInt(m[1]), name: m[2] } : null; 
+        });
+
         while (currentRanking.length > 0 && proposedStages.length < 5) {
             let target = currentRanking[0];
             let bestStageKey = null;
-            
             let mainCandidates = stages.map(key => {
-                let drops = parseEquip(MASTER_STAGE_DATA[key]);
-                let main = drops[0];
-                if (main.tier === target.tier && main.name === target.name) {
-                    let overlapCount = drops.slice(1).filter(s => currentRanking.some(r => r.tier === s.tier && r.name === s.name)).length;
-                    return { key, overlapCount };
+                let drops = parseEq(MASTER_STAGE_DATA[key]);
+                if (drops[0].tier === target.tier && drops[0].name === target.name) {
+                    let overlap = drops.slice(1).filter(s => currentRanking.some(r => r.tier === s.tier && r.name === s.name)).length;
+                    return { key, overlap };
                 }
                 return null;
             }).filter(c => c !== null);
 
             if (mainCandidates.length > 0) {
-                mainCandidates.sort((a, b) => b.overlapCount - a.overlapCount);
+                mainCandidates.sort((a, b) => b.overlap - a.overlap);
                 bestStageKey = mainCandidates[0].key;
             } else {
-                let subCandidates = stages.filter(key => parseEquip(MASTER_STAGE_DATA[key]).slice(1).some(s => s.tier === target.tier && s.name === target.name));
+                let subCandidates = stages.filter(key => parseEq(MASTER_STAGE_DATA[key]).slice(1).some(s => s.tier === target.tier && s.name === target.name));
                 if (subCandidates.length > 0) {
                     subCandidates.sort((a, b) => {
-                        let mA = parseEquip(MASTER_STAGE_DATA[a])[0], mB = parseEquip(MASTER_STAGE_DATA[b])[0];
+                        let mA = parseEq(MASTER_STAGE_DATA[a])[0], mB = parseEq(MASTER_STAGE_DATA[b])[0];
                         return (snapshot.find(s => s.tier === mA.tier && s.name === mA.name)?.diff || 0) - (snapshot.find(s => s.tier === mB.tier && s.name === mB.name)?.diff || 0);
                     });
                     bestStageKey = subCandidates[0];
                 }
             }
-
             if (bestStageKey) {
                 proposedStages.push(bestStageKey);
-                let pool = getDropPool(bestStageKey);
+                let pool = parseEq(MASTER_STAGE_DATA[bestStageKey]);
+                if (pool[0].tier >= 4) pool = pool.concat(pool.map(d => ({ tier: d.tier - 2, name: d.name })));
                 currentRanking = currentRanking.filter(r => !pool.some(d => d.tier === r.tier && d.name === r.name));
             } else { currentRanking.shift(); }
         }
 
-        // --- 外科的順位入れ替えロジック Ver 2.1 ---
         let adjusted = true;
-        let limit = 0;
-        while (adjusted && limit < 10) {
-            adjusted = false; limit++;
+        while (adjusted) {
+            adjusted = false;
             for (let j = 1; j < proposedStages.length; j++) {
-                let poolJ = getDropPool(proposedStages[j]);
+                let poolJ = parseEq(MASTER_STAGE_DATA[proposedStages[j]]);
+                if (poolJ[0].tier >= 4) poolJ = poolJ.concat(poolJ.map(d => ({ tier: d.tier - 2, name: d.name })));
                 for (let i = 0; i < j; i++) {
-                    let mainI = parseEquip(MASTER_STAGE_DATA[proposedStages[i]])[0];
+                    let mainI = parseEq(MASTER_STAGE_DATA[proposedStages[i]])[0];
                     if (poolJ.some(d => d.tier === mainI.tier && d.name === mainI.name)) {
-                        let coveringStage = proposedStages.splice(j, 1)[0]; 
-                        let coveredStage = proposedStages.splice(i, 1)[0];  
-                        proposedStages.splice(i, 0, coveringStage);      
-                        proposedStages.push(coveredStage);               
+                        let covering = proposedStages.splice(j, 1)[0];
+                        let covered = proposedStages.splice(i, 1)[0];
+                        proposedStages.splice(i, 0, covering);
+                        proposedStages.push(covered);
                         adjusted = true; break;
                     }
                 }
@@ -344,14 +352,43 @@
         document.getElementById('recommendation-display').style.display = 'block';
     }
 
-    function getDropPool(stageKey) {
-        let drops = parseEquip(MASTER_STAGE_DATA[stageKey]);
-        let pool = [...drops];
-        if (drops[0].tier >= 4) pool = pool.concat(drops.map(d => ({ tier: d.tier - 2, name: d.name })));
-        if (drops[0].tier >= 5) pool = pool.concat(drops.map(d => ({ tier: d.tier - 3, name: d.name })));
-        return pool;
+    async function generateCanvas() {
+        const target = document.getElementById('capture-target');
+        const table = document.getElementById('result-table');
+        target.classList.add('capture-mode');
+        const contentWidth = Math.max(890, table.scrollWidth + 40);
+        const options = { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: contentWidth, windowWidth: contentWidth };
+        const canvas = await html2canvas(target, options);
+        target.classList.remove('capture-mode');
+        return canvas;
     }
 
+    async function copyScreenshot() {
+        const btn = document.getElementById('copy-btn');
+        try {
+            const canvas = await generateCanvas(); 
+            // iOS Safari向けの最適化：Blob生成と書き込みをセットで行う
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
+                try {
+                    const data = [new ClipboardItem({ [blob.type]: blob })];
+                    await navigator.clipboard.write(data);
+                    btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
+                    setTimeout(() => { btn.innerText = "画像としてコピー"; btn.style.backgroundColor = "#6c757d"; }, 2000);
+                } catch (err) { alert("コピーに失敗しました。iPhoneの場合はブラウザを最新にしてお試しください。"); }
+            }, "image/png");
+        } catch (err) { alert("画像生成に失敗しました。"); }
+    }
+
+    async function takeScreenshot() {
+        const canvas = await generateCanvas();
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = `装備在庫カンリくん_${new Date().getMonth()+1}月${new Date().getDate()}日.png`;
+        link.click();
+    }
+
+    // 基本機能 (復活、リセット等)
     function confirmReset() { if (confirm("リセットしますか？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     function generateDataString() {
         const data = []; EQUIP_LIST.forEach((_, i) => data.push(parseInt(document.getElementById(`target-${i}`).value) || 0));
@@ -378,41 +415,6 @@
         const jumon = document.getElementById('jumon-str').innerText;
         const text = type === 'url' ? window.location.origin + window.location.pathname + "#" + jumon : jumon;
         await navigator.clipboard.writeText(text); alert("コピーしました！");
-    }
-
-    async function generateCanvas() {
-        const target = document.getElementById('capture-target');
-        const table = document.getElementById('result-table');
-        target.classList.add('capture-mode');
-        // コンテンツ全体の幅を計算
-        const contentWidth = Math.max(890, table.scrollWidth + 40);
-        const options = { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: contentWidth, windowWidth: contentWidth };
-        const canvas = await html2canvas(target, options);
-        target.classList.remove('capture-mode');
-        return canvas;
-    }
-
-    async function takeScreenshot() {
-        try {
-            const canvas = await generateCanvas();
-            const link = document.createElement('a');
-            const now = new Date();
-            link.href = canvas.toDataURL("image/png");
-            link.download = `装備在庫カンリくん_${now.getMonth()+1}月${now.getDate()}日.png`;
-            link.click();
-        } catch (e) { alert("保存に失敗しました。"); }
-    }
-
-    async function copyScreenshot() {
-        const btn = document.getElementById('copy-btn');
-        try {
-            const canvas = await generateCanvas(); 
-            canvas.toBlob(b => {
-                navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
-                btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
-                setTimeout(() => { btn.innerText = "画像としてコピー"; btn.style.backgroundColor = "#6c757d"; }, 2000);
-            });
-        } catch (err) { alert("コピーに失敗しました。"); }
     }
     window.addEventListener('DOMContentLoaded', initApp);
 </script>
