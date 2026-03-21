@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- 
   PROJECT: 装備在庫カンリくん
-  VERSION: 1.3.5 (Demotion Stack Logic)
+  VERSION: 1.3.6 (Surgical Replacement Logic)
   UPDATE: 2024/03/21
   AUTHOR: ゆっきー & Gemini
 -->
@@ -145,7 +145,7 @@
 
 <script>
     /**
-     * 装備在庫カンリくん Ver 1.3.5
+     * 装備在庫カンリくん Ver 1.3.6
      */
     const EQUIP_LIST = [
         { name: "帽子", def: 3 }, { name: "手袋", def: 2 }, { name: "靴", def: 3 },
@@ -310,7 +310,7 @@
             } else { currentRanking.shift(); }
         }
 
-        // --- 最終最適化：後回し（デモート）ロジック ---
+        // --- 最終最適化：差し替え型デモートロジック Ver 2.1 ---
         let adjusted = true;
         let limit = 0;
         while (adjusted && limit < 10) {
@@ -319,12 +319,11 @@
                 let poolJ = getDropPool(proposedStages[j]);
                 for (let i = 0; i < j; i++) {
                     let mainI = parseEquip(MASTER_STAGE_DATA[proposedStages[i]])[0];
-                    // ステージJ（後方）の下位ドロップに、ステージI（前方）のメインが含まれる場合
                     if (poolJ.some(d => d.tier === mainI.tier && d.name === mainI.name)) {
-                        let demoted = proposedStages.splice(i, 1)[0]; // 前方のものを抜く
-                        let promoted = proposedStages.splice(j - 1, 1)[0]; // 後方のものを抜く(indexズレ補正)
-                        proposedStages.unshift(promoted); // カバーした側を先頭(①)へ
-                        proposedStages.push(demoted); // カバーされた側を最後尾(⑤)へ
+                        let coveringStage = proposedStages.splice(j, 1)[0]; // 後ろの「カバーした側」を抜く
+                        let coveredStage = proposedStages.splice(i, 1)[0];  // 前の「カバーされた側」を抜く
+                        proposedStages.splice(i, 0, coveringStage);      // 元々「カバーされた側」がいた順位に挿入
+                        proposedStages.push(coveredStage);               // カバーされた側は最後尾へ
                         adjusted = true; break;
                     }
                 }
