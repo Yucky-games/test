@@ -58,7 +58,8 @@
         .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
         /* キャプチャ時強制スタイル（PC版の横幅をエミュレート） */
-        .capture-mode { overflow: visible !important; width: 1100px !important; min-width: 1100px !important; position: absolute; left: -9999px; }
+        /* Source 8の見切れに対応するため、幅を1100pxから1200pxに外科的拡張 */
+        .capture-mode { overflow: visible !important; width: 1200px !important; min-width: 1200px !important; position: absolute; left: -9999px; }
         .capture-mode .scroll-x { overflow: visible !important; width: 100% !important; }
         .capture-mode .stage-flow { flex-direction: row !important; }
         .capture-mode .stage-box { width: auto !important; }
@@ -241,9 +242,9 @@
 
     async function generateCanvas() {
         const target = document.getElementById('capture-target');
-        // キャプチャ時強制スタイル適用
+        // Source 8の見切れに対応するため、幅を1100pxから1200pxに外科的拡張
         target.classList.add('capture-mode');
-        const options = { backgroundColor: "#ffffff", scale: 2, width: 1100, windowWidth: 1200, useCORS: true };
+        const options = { backgroundColor: "#ffffff", scale: 2, width: 1200, windowWidth: 1200, useCORS: true };
         const canvas = await html2canvas(target, options);
         target.classList.remove('capture-mode');
         return canvas;
