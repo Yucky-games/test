@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- 
   PROJECT: 装備在庫カンリくん
-  VERSION: 1.4.2 (iOS Safari Long-press Workaround)
+  VERSION: 1.4.3 (Mobile Desktop-View Screenshot Fixed)
   UPDATE: 2024/03/20
   AUTHOR: ゆっきー & Gemini
 -->
@@ -43,16 +43,16 @@
         #jumon-input-area { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; border: 2px solid #6f42c1; }
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:600px; width:95%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
         .modal-msg-sub { font-size: 0.8rem; color: #666; display: block; margin-bottom: 20px; line-height: 1.5; }
-        .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 250px; overflow-y: auto; }
+        .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
         .bg-red { background-color: #ffebed !important; color: #d32f2f; font-weight: bold; }
         .bg-yellow { background-color: #fffde7 !important; color: #856404; font-weight: bold; }
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
-        .capture-mode { overflow: visible !important; max-width: none !important; width: max-content !important; }
-        .capture-mode table { min-width: auto !important; width: 100% !important; }
+        .capture-mode { overflow: visible !important; max-width: none !important; width: 1100px !important; }
+        .capture-mode table { min-width: 800px !important; width: 100% !important; }
         .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: bold; font-size: 1.0rem; }
@@ -162,9 +162,7 @@
 
     function isIosSafari() {
         const ua = window.navigator.userAgent;
-        const isIPhone = !!ua.match(/iPhone/i);
-        const isSafari = !!ua.match(/Safari/i) && !ua.match(/CriOS/i) && !ua.match(/Chrome/i);
-        return isIPhone && isSafari;
+        return !!ua.match(/iPhone/i) && (!!ua.match(/Safari/i) && !ua.match(/CriOS/i) && !ua.match(/Chrome/i));
     }
 
     function initApp() {
@@ -341,18 +339,15 @@
     async function copyScreenshot() {
         const btn = document.getElementById('copy-btn');
         const c = await generateCanvas();
-        
         if (isIosSafari()) {
-            // iPhone Safari用：モーダルに画像を表示して長押しコピーを促す
             const dataUrl = c.toDataURL("image/png");
             document.getElementById('jumon-str').innerHTML = `<img src="${dataUrl}" style="width:100%; border:1px solid #ccc;">`;
             document.querySelector('.modal-msg-main').innerText = "画像を長押しして「コピー」を選択してください";
             document.querySelector('.modal-msg-sub').innerText = "iOS Safariの制限によりボタンでの直接コピーができないため、この方式をとっています。";
-            document.getElementById('modal-btns').style.display = 'none'; // 不要なボタンを隠す
+            document.getElementById('modal-btns').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'flex';
             return;
         }
-
         c.toBlob(b => {
             navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
             btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
@@ -362,9 +357,19 @@
 
     async function generateCanvas() { 
         const t = document.getElementById('capture-target'), w = document.getElementById('table-wrapper'); 
+        // PC版の見た目を維持するため、一時的に横幅を1100pxに固定する
+        const originalWidth = t.style.width;
+        t.style.width = "1100px";
         w.classList.add('capture-mode'); 
-        const c = await html2canvas(t, { backgroundColor: "#fff", scale: 2 }); 
-        w.classList.remove('capture-mode'); return c; 
+        const c = await html2canvas(t, { 
+            backgroundColor: "#fff", 
+            scale: 2,
+            width: 1100,
+            windowWidth: 1200 // レスポンスによる回り込みを防ぐための擬似的なウィンドウ幅
+        }); 
+        w.classList.remove('capture-mode'); 
+        t.style.width = originalWidth;
+        return c; 
     }
     function showExportModal() { 
         document.querySelector('.modal-msg-main').innerText = "じゅもんを保存してください";
