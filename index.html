@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!-- 
-  PROJECT: 装備在庫カンリくん
-  VERSION: 1.3.8 (Preview Modal for iOS)
-  UPDATE: 2026/03/21
-  AUTHOR: ゆっきー & Gemini
--->
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -17,11 +11,13 @@
         body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; padding: 20px; position: relative; }
         .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
         
+        /* クレジット（表示は「made by ゆっきー」のみ） */
         .credit { position: absolute; top: 15px; right: 20px; font-size: 0.85rem; color: #666; text-decoration: none; border-bottom: 1px solid transparent; transition: 0.2s; }
         .credit:hover { color: #005bac; border-bottom: 1px solid #005bac; }
 
         h1 { color: #005bac; font-size: 1.6rem; border-bottom: 2px solid #005bac; padding-bottom: 10px; margin-top: 0; padding-right: 120px; }
         h2 { font-size: 1rem; margin-top: 25px; color: #333; background: #f0f4f8; padding: 8px; border-radius: 4px; display: flex; align-items: center; flex-wrap: wrap; }
+        .sub-desc { font-size: 0.75rem; font-weight: normal; color: #666; margin-left: 10px; }
         
         .grid-targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .target-box { display: flex; flex-direction: column; }
@@ -40,22 +36,30 @@
         .btn-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         .btn { padding: 12px 20px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; min-width: 160px; }
         .btn-calc { background: #005bac; color: #fff; width: 220px; }
+        
         .retro-font { font-family: 'DotGothic16', sans-serif !important; letter-spacing: 1px; }
         .btn-jumon { background: #6f42c1; color: #fff; box-shadow: 0 4px 0 #4e2e8a; }
+        .btn-jumon:hover { background: #5a32a3; transform: translateY(1px); }
+
         .btn-reset { background: #dc3545; color: #fff; box-shadow: 0 4px 0 #a71d2a; }
+        .btn-reset:hover { background: #c82333; transform: translateY(1px); }
+
         .btn-copy { background: #6c757d; color: #fff; box-shadow: 0 4px 0 #495057; }
         .btn-ss { background: #28a745; color: #fff; box-shadow: 0 4px 0 #1e7e34; }
 
         #jumon-input-area { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; border: 2px solid #6f42c1; }
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
+        .jumon-help-text { font-size: 0.8rem; color: #666; margin-top: 5px; margin-bottom: 15px; line-height: 1.5; }
 
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
+        .modal-msg-sub { font-size: 0.8rem; color: #666; display: block; margin-bottom: 20px; line-height: 1.5; }
         .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 100px; overflow-y: auto; }
 
-        /* --- 画像コピープレビュー用モーダル --- */
+        /* --- 画像コピープレビュー用モーダル (iOS Safari対策) --- */
         #preview-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
-        .preview-img-container { background:#fff; padding:10px; border-radius:8px; max-width:95%; max-height:80%; overflow: auto; position: relative; }
+        .preview-img-container { background:#fff; padding:10px; border-radius:8px; max-width:95%; max-height:80%; overflow: auto; }
         #preview-img { width: 100%; height: auto; display: block; }
         .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; line-height: 1.5; }
         .close-hint { color: #ccc; margin-top: 15px; font-size: 0.9rem; }
@@ -66,20 +70,35 @@
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
         /* --- 周回提案セクション --- */
-        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 840px; box-sizing: border-box; }
+        .recommendation-area { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #fffdf0; 
+            border: 2px solid #ffeeba; 
+            border-radius: 8px; 
+            text-align: left; 
+            width: 840px; 
+            box-sizing: border-box;
+        }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
         .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
 
-        /* --- スマホ表示最適化 --- */
+        /* --- スマホ表示最適化 (画面幅が狭いときのみ適用) --- */
         @media screen and (max-width: 880px) {
             .recommendation-area { width: 100%; }
             .stage-flow { flex-direction: column; align-items: stretch; gap: 8px; }
-            .stage-box { width: 100%; font-size: min(3.8vw, 0.9rem); box-sizing: border-box; display: block; text-align: center; }
+            .stage-box { 
+                width: 100%; 
+                font-size: min(3.8vw, 0.9rem); 
+                box-sizing: border-box;
+                display: block;
+                text-align: center;
+            }
         }
 
-        /* キャプチャ時固定スタイル */
-        .capture-mode { overflow: visible !important; width: 890px !important; position: absolute; left: -9999px; }
+        /* 画像出力用の一時的クラス (常にPC版のワイドレイアウトで出力) */
+        .capture-mode { overflow: visible !important; width: fit-content !important; min-width: 890px !important; position: absolute; left: -9999px; }
         .capture-mode .recommendation-area { width: 840px !important; }
         .capture-mode .stage-flow { flex-direction: row !important; }
         .capture-mode .stage-box { width: auto !important; font-size: 1.0rem !important; }
@@ -92,7 +111,13 @@
     <a href="https://x.com/yucky_games" target="_blank" rel="noopener noreferrer" class="credit">made by ゆっきー</a>
     <h1>装備在庫カンリくん</h1>
 
-    <h2>[1] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
+    <h2>
+        [1] 各装備の目標確保人数を設定
+        <span class="sub-desc">各装備が何人分あればよいか設定します。オススメ確保人数がデフォルト値です。</span>
+    </h2>
+    <div id="target-inputs" class="grid-targets"></div>
+
+    <h2>[2] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
     <div class="scroll-x">
         <table>
             <thead><tr id="table-head"><th>アイテム</th></tr></thead>
@@ -108,6 +133,10 @@
 
     <div id="jumon-input-area">
         <p class="retro-font" style="margin-top:0; font-size: 1rem; font-weight: bold; color: #6f42c1; margin-bottom: 5px;">「ふっかつのじゅもん」を貼り付けてください</p>
+        <p class="retro-font jumon-help-text">
+            ふっかつのじゅもんとは？<br>
+            「計算＆保存」を実行したあとに発行した「ふっかつのじゅもん」を入力すると、前回の入力内容を復元できます
+        </p>
         <input type="text" id="jumon-text-input" placeholder="ここに英数字列を貼り付け">
         <button class="btn btn-ss" style="width:100%;" onclick="restoreFromJumon()">ふっかつする</button>
     </div>
@@ -136,9 +165,10 @@
     </div>
 </div>
 
-<!-- ふっかつのじゅもん用モーダル -->
 <div id="modal-overlay">
     <div class="modal-content">
+        <span class="modal-msg-main">この文字列、またはURLを保存してください。</span>
+        <span class="modal-msg-sub">URLからアクセスするか、「ふっかつのじゅもんを入力する」に入力すれば現在の情報を復元できます。</span>
         <div id="jumon-str" class="jumon-display"></div>
         <div class="btn-container" style="margin-top:0;">
             <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLコピー</button>
@@ -148,9 +178,8 @@
     </div>
 </div>
 
-<!-- 画像コピープレビュー用モーダル -->
 <div id="preview-modal" onclick="closeCopyPreview()">
-    <div class="preview-guide">画像を長押しして<br>「コピー」または「保存」してください</div>
+    <div class="preview-guide">画像を長押しして<br>「コピー」または「写真に保存」してください</div>
     <div class="preview-img-container" onclick="event.stopPropagation()">
         <img id="preview-img" src="" alt="preview">
     </div>
@@ -166,12 +195,13 @@
     const MASTER_STAGE_DATA = { "1-1":"T1靴/T1手袋/T1帽子","1-2":"T1バッグ/T1手袋/T1帽子","1-3":"T1靴/T1手袋/T1帽子","1-4":"T1ヘアピン/T1バッグ/T1靴","1-5":"T1バッジ/T1バッグ/T1帽子","2-1":"T1時計/T1ヘアピン/T1バッジ","2-2":"T1ネックレス/T1時計/T1ヘアピン","2-3":"T1時計/T1お守り/T1ヘアピン","2-4":"T1ネックレス/T1時計/T1お守り","2-5":"T1ネックレス/T1お守り/T1バッジ","4-1":"T2帽子/T2手袋/T2靴","4-2":"T2帽子/T2手袋/T2バッグ","4-3":"T2帽子/T2手袋/T2靴","4-4":"T2靴/T2バッグ/T2ヘアピン","4-5":"T2帽子/T2バッグ/T2バッジ","5-1":"T2バッジ/T2ヘアピン/T2時計","5-2":"T2ヘアピン/T2時計/T2ネックレス","5-3":"T2ヘアピン/T2お守り/T2時計","5-4":"T2お守り/T2時計/T2ネックレス","5-5":"T2バッジ/T2お守り/T2ネックレス","7-1":"T3帽子/T3手袋/T3靴","7-2":"T3帽子/T3手袋/T3バッグ","7-3":"T3帽子/T3手袋/T3靴","7-4":"T3靴/T3バッグ/T3ヘアピン","7-5":"T3帽子/T3バッグ/T3バッジ","8-1":"T3バッジ/T3ヘアピン/T3時計","8-2":"T3ヘアピン/T3時計/T3ネックレス","8-3":"T3ヘアピン/T3お守り/T3時計","8-4":"T3お守り/T3時計/T3ネックレス","8-5":"T3バッジ/T3お守り/T3ネックレス","10-1":"T4帽子/T4手袋/T4靴","10-2":"T4帽子/T4手袋/T4バッグ","10-3":"T4帽子/T4手袋/T4靴","10-4":"T4靴/T4バッグ/T4ヘアピン","10-5":"T4帽子/T4バッグ/T4バッジ","11-1":"T4バッジ/T4ヘアピン/T4時計","11-2":"T4ヘアピン/T4時計/T4ネックレス","11-3":"T4ヘアピン/T4お守り/T4時計","11-4":"T4お守り/T4時計/T4ネックレス","11-5":"T4バッジ/T4お守り/T4ネックレス","13-1":"T5手袋/T5帽子/T5靴","13-2":"T5バッジ/T5手袋/T5帽子","13-3":"T5ヘアピン/T5帽子/T5靴","13-4":"T5バッグ/T5ヘアピン/T5靴","13-5":"T5バッジ/T5手袋/T5帽子","14-1":"T5お守り/T5時計/T5ネックレス","14-2":"T5ヘアピン/T5お守り/T5時計","14-3":"T5バッグ/T5時計/T5ネックレス","14-4":"T5バッジ/T5お守り/T5時計","14-5":"T5バッグ/T5ヘアピン/T5ネックレス","16-1":"T6手袋/T6靴/T6帽子","16-2":"T6手袋/T6帽子/T6バッジ","16-3":"T6靴/T6帽子/T6ヘアピン","16-4":"T6靴/T6ヘアピン/T6バッグ","16-5":"T6手袋/T6帽子/T6バッジ","17-1":"T6お守り/T6ネックレス/T6時計","17-2":"T6ヘアピン/T6お守り/T6時計","17-3":"T6バッグ/T6ネックレス/T6時計","17-4":"T6バッジ/T6お守り/T6時計","17-5":"T6ヘアピン/T6バッグ/T6ネックレス","19-1":"T7靴/T7手袋/T7帽子","19-2":"T7バッジ/T7手袋/T7帽子","19-3":"T7ヘアピン/T7靴/T7帽子","19-4":"T7ヘアピン/T7バッグ/T7靴","19-5":"T7バッジ/T7手袋/T7帽子","20-1":"T7ネックレス/T7時計/T7お守り","20-2":"T7時計/T7お守り/T7ヘアピン","20-3":"T7ネックレス/T7時計/T7バッグ","20-4":"T7時計/T7お守り/T7バッジ","20-5":"T7ネックレス/T7ヘアピン/T7バッグ","22-1":"T8靴/T8手袋/T8帽子","22-2":"T8バッジ/T8手袋/T8帽子","22-3":"T8ヘアピン/T8靴/T8帽子","22-4":"T8ヘアピン/T8バッグ/T8靴","22-5":"T8バッジ/T8手袋/T8帽子","23-1":"T8ネックレス/T8時計/T8お守り","23-2":"T8時計/T8お守り/T8ヘアピン","23-3":"T8ネックレス/T8時計/T8バッグ","23-4":"T8時計/T8お守り/T8バッジ","23-5":"T8ネックレス/T8ヘアピン/T8バッグ","25-1":"T9靴/T9手袋/T9帽子","25-2":"T9バッジ/T9手袋/T9帽子","25-3":"T9ヘアピン/T9靴/T9帽子","25-4":"T9ヘアピン/T9バッジ/T9バッグ","25-5":"T9バッジ/T9手袋/T9帽子","26-1":"T9ネックレス/T9時計/T9お守り","26-2":"T9時計/T9ヘアピン/T9靴","26-3":"T9時計/T9お守り/T9バッグ","26-4":"T9時計/T9バッジ/T9手袋","26-5":"T9ネックレス/T9ヘアピン/T9バッグ","28-1":"T10靴/T10帽子/T10手袋","28-2":"T10バッジ/T10帽子/T10手袋","28-3":"T10ヘアピン/T10靴/T10帽子","28-4":"T10ヘアピン/T10バッジ/T10バッグ","28-5":"T10バッジ/T10帽子/T10手袋","29-1":"T10お守り/T10ネックレス/T10時計","29-2":"T10ヘアピン/T10靴/T10時計","29-3":"T10バッグ/T10お守り/T10時計","29-4":"T10バッジ/T10手袋/T10時計","29-5":"T10ヘアピン/T10バッグ/T10ネックレス" };
 
     function initApp() {
+        const targetDiv = document.getElementById('target-inputs');
         const invBody = document.getElementById('inventory-body');
         const tableHead = document.getElementById('table-head');
         const resultHead = document.getElementById('result-head');
         TIERS.forEach(t => { const th = document.createElement('th'); th.innerText = 'T' + t; tableHead.appendChild(th); resultHead.appendChild(th.cloneNode(true)); });
         EQUIP_LIST.forEach((eq, i) => {
-            const hiddenInput = document.createElement('input'); hiddenInput.type = "number"; hiddenInput.id = `target-${i}`; hiddenInput.value = eq.def; hiddenInput.style.display = "none"; document.body.appendChild(hiddenInput);
+            targetDiv.innerHTML += `<div class="target-box"><label>${eq.name}</label><input type="number" id="target-${i}" value="${eq.def}" min="0" onfocus="this.select()"></div>`;
             let row = `<tr><td class="row-label">${eq.name}</td>`;
             TIERS.forEach(t => row += `<td><input type="number" id="inv-${i}-${t}" value="0" min="0" onfocus="this.select()"></td>`);
             invBody.innerHTML += row + `</tr>`;
@@ -252,7 +282,9 @@
             }
             if (best) {
                 proposed.push(best);
-                let pool = parseEq(MASTER_STAGE_DATA[best]); if (pool[0].tier >= 4) pool = pool.concat(pool.map(d => ({ tier: d.tier - 2, name: d.name })));
+                let pool = parseEq(MASTER_STAGE_DATA[best]);
+                if (pool[0].tier >= 4) pool = pool.concat(pool.map(d => ({ tier: d.tier - 2, name: d.name })));
+                if (pool[0].tier >= 5) pool = pool.concat(pool.map(d => ({ tier: d.tier - 3, name: d.name })));
                 currentRanking = currentRanking.filter(r => !pool.some(d => d.tier === r.tier && d.name === r.name));
             } else { currentRanking.shift(); }
         }
@@ -262,7 +294,9 @@
         while (adjusted) {
             adjusted = false;
             for (let j = 1; j < proposed.length; j++) {
-                let poolJ = parseEq(MASTER_STAGE_DATA[proposed[j]]); if (poolJ[0].tier >= 4) poolJ = poolJ.concat(poolJ.map(d => ({ tier: d.tier - 2, name: d.name })));
+                let poolJ = parseEq(MASTER_STAGE_DATA[proposed[j]]);
+                if (poolJ[0].tier >= 4) poolJ = poolJ.concat(poolJ.map(d => ({ tier: d.tier - 2, name: d.name })));
+                if (poolJ[0].tier >= 5) poolJ = poolJ.concat(poolJ.map(d => ({ tier: d.tier - 3, name: d.name })));
                 for (let i = 0; i < j; i++) {
                     let mainI = parseEq(MASTER_STAGE_DATA[proposed[i]])[0];
                     if (poolJ.some(d => d.tier === mainI.tier && d.name === mainI.name)) {
@@ -279,13 +313,13 @@
         document.getElementById('recommendation-display').style.display = 'block';
     }
 
-    // キャプチャ関連
     async function generateCanvas() {
         const target = document.getElementById('capture-target');
         const table = document.getElementById('result-table');
         target.classList.add('capture-mode');
         const contentWidth = Math.max(890, table.scrollWidth + 40);
-        const canvas = await html2canvas(target, { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: contentWidth, windowWidth: contentWidth });
+        const options = { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: contentWidth, windowWidth: contentWidth };
+        const canvas = await html2canvas(target, options);
         target.classList.remove('capture-mode');
         return canvas;
     }
@@ -305,7 +339,6 @@
         link.click();
     }
 
-    // 復活の呪文・基本機能
     function confirmReset() { if (confirm("リセットしますか？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     function generateDataString() {
         const data = []; EQUIP_LIST.forEach((_, i) => data.push(parseInt(document.getElementById(`target-${i}`).value) || 0)); EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => data.push(parseInt(document.getElementById(`inv-${i}-${t}`).value) || 0))); TIERS.forEach(t => data.push(parseInt(document.getElementById(`box-${t}`).value) || 0));
