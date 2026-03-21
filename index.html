@@ -39,38 +39,29 @@
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:600px; width:95%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
-        .modal-msg-sub { font-size: 0.8rem; color: #666; display: block; margin-bottom: 20px; line-height: 1.5; }
         .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
 
-        /* iPhone Safari用画像表示モーダル */
+        /* iPhone Safari用プレビューモーダル */
         #preview-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
         .preview-img-container { background:#fff; padding:10px; border-radius:8px; max-width:95%; max-height:80%; overflow: auto; }
         #preview-img { width: 100%; height: auto; display: block; }
-        .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; line-height: 1.5; }
-        .close-hint { color: #ccc; margin-top: 15px; font-size: 0.9rem; }
+        .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; }
 
         .bg-red { background-color: #ffebed !important; color: #d32f2f; font-weight: bold; }
         .bg-yellow { background-color: #fffde7 !important; color: #856404; font-weight: bold; }
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
-        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 840px; box-sizing: border-box; }
+        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 100%; box-sizing: border-box; }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
-        .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
-        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
+        .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-weight: bold; font-size: 1.0rem; }
+        .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        @media screen and (max-width: 880px) {
-            .recommendation-area { width: 100%; }
-            .stage-flow { flex-direction: column; align-items: stretch; gap: 8px; }
-            .stage-box { width: 100%; font-size: min(3.8vw, 0.9rem); box-sizing: border-box; display: block; text-align: center; }
-        }
-
-        /* キャプチャ時強制スタイル（PC版の見た目を維持） */
+        /* キャプチャ時強制スタイル（PC版の横幅をエミュレート） */
         .capture-mode { overflow: visible !important; width: 1100px !important; min-width: 1100px !important; position: absolute; left: -9999px; }
-        .capture-mode .recommendation-area { width: 840px !important; }
+        .capture-mode .scroll-x { overflow: visible !important; width: 100% !important; }
         .capture-mode .stage-flow { flex-direction: row !important; }
-        .capture-mode .stage-box { width: auto !important; font-size: 1.0rem !important; }
-        .capture-mode .scroll-x { overflow: visible !important; }
+        .capture-mode .stage-box { width: auto !important; }
     </style>
 </head>
 <body>
@@ -121,7 +112,6 @@
     </div>
 </div>
 
-<!-- モーダル類 -->
 <div id="modal-overlay">
     <div class="modal-content">
         <span class="modal-msg-main">じゅもんを保存してください</span>
@@ -139,7 +129,6 @@
     <div class="preview-img-container" onclick="event.stopPropagation()">
         <img id="preview-img" src="" alt="preview">
     </div>
-    <div class="close-hint">タップで閉じる</div>
 </div>
 
 <script>
@@ -183,7 +172,6 @@
         resBody.innerHTML = ""; sumBody.innerHTML = "";
         let tDeficits = {}; TIERS.forEach(t => tDeficits[t] = 0);
         let snapshot = [];
-
         EQUIP_LIST.forEach((eq, i) => {
             const targetNum = parseInt(document.getElementById(`target-${i}`).value) || 0;
             let row = `<tr><td class="row-label">${eq.name}</td>`;
@@ -196,7 +184,6 @@
             });
             resBody.innerHTML += row + `</tr>`;
         });
-
         let boxDiffs = {};
         let htmlFinal = `<tr class="summary-header"><td class="row-label">ボックス考慮後</td>`;
         TIERS.forEach(t => {
@@ -211,7 +198,6 @@
         generateRoadmap(snapshot, boxDiffs);
     }
 
-    // Source 4の安定ロジックを復元
     function generateRoadmap(snapshot, boxDiffs) {
         let allItems = snapshot.map(item => {
             let group = (boxDiffs[item.tier] < 0 && item.diff < 0) ? 1 : (item.diff < 0 ? 2 : 3);
@@ -220,12 +206,10 @@
         allItems.sort((a, b) => a.group - b.group || a.diff - b.diff || b.tier - a.tier || a.itemRank - b.itemRank);
         let ranking = allItems.slice(0, 10).filter(item => item.diff < 0);
         if (ranking.length === 0) { document.getElementById('recommendation-display').style.display = 'none'; return; }
-
         let proposed = [];
         let currentRanking = [...ranking];
         let stages = Object.keys(MASTER_STAGE_DATA);
         const parseEq = (s) => s.split('/').map(p => { let m = p.trim().match(/T(\d+)(.+)/); return m ? { tier: parseInt(m[1]), name: m[2] } : null; });
-
         while (currentRanking.length > 0 && proposed.length < 5) {
             let target = currentRanking[0];
             let best = null;
@@ -257,20 +241,17 @@
 
     async function generateCanvas() {
         const target = document.getElementById('capture-target');
-        const table = document.getElementById('result-table');
+        // キャプチャ時強制スタイル適用
         target.classList.add('capture-mode');
-        // キャプチャ時に強制的にPC版相当の幅を固定
         const options = { backgroundColor: "#ffffff", scale: 2, width: 1100, windowWidth: 1200, useCORS: true };
         const canvas = await html2canvas(target, options);
         target.classList.remove('capture-mode');
         return canvas;
     }
 
-    // 分岐処理：iPhone Safariならプレビュー表示、それ以外なら直接コピー
     async function openCopyPreview() {
         const btn = document.getElementById('copy-btn');
         const canvas = await generateCanvas();
-
         if (isIosSafari()) {
             document.getElementById('preview-img').src = canvas.toDataURL("image/png");
             document.getElementById('preview-modal').style.display = 'flex';
@@ -283,13 +264,16 @@
             });
         }
     }
+
     function closeCopyPreview() { document.getElementById('preview-modal').style.display = 'none'; }
 
     async function takeScreenshot() {
         const canvas = await generateCanvas();
+        const now = new Date();
+        const dateStr = (now.getMonth() + 1) + "月" + now.getDate() + "日";
         const link = document.createElement('a');
         link.href = canvas.toDataURL("image/png");
-        link.download = `inventory.png`;
+        link.download = `装備在庫カンリくん_${dateStr}.png`;
         link.click();
     }
 
