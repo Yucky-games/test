@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!-- 
-  PROJECT: 装備在庫カンリくん
-  VERSION: 1.3.6 (Surgical Replacement Logic)
-  UPDATE: 2024/03/21
-  AUTHOR: ゆっきー & Gemini
--->
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -51,6 +45,7 @@
 
         #jumon-input-area { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; border: 2px solid #6f42c1; }
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
+        .jumon-help-text { font-size: 0.8rem; color: #666; margin-top: 5px; margin-bottom: 15px; line-height: 1.5; }
 
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -61,6 +56,7 @@
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
+        /* --- 周回提案エリア用デザイン（画像出力バランス調整済み） --- */
         .recommendation-area { 
             margin-top: 20px; 
             padding: 15px; 
@@ -75,6 +71,7 @@
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
         .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
+        /* キャプチャ時の一時適用スタイル */
         .capture-mode { overflow: visible !important; width: fit-content !important; min-width: 890px !important; }
         .capture-mode .scroll-x { overflow: visible !important; }
     </style>
@@ -85,7 +82,10 @@
     <a href="https://x.com/yucky_games" target="_blank" rel="noopener noreferrer" class="credit">made by ゆっきー</a>
     <h1>装備在庫カンリくん</h1>
 
-    <h2>[1] 各装備の目標確保人数を設定</h2>
+    <h2>
+        [1] 各装備の目標確保人数を設定
+        <span class="sub-desc">各装備が何人分あればよいか設定します。デフォルトで入っているのはオススメの確保人数です。</span>
+    </h2>
     <div id="target-inputs" class="grid-targets"></div>
 
     <h2>[2] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
@@ -104,6 +104,10 @@
 
     <div id="jumon-input-area">
         <p class="retro-font" style="margin-top:0; font-size: 1rem; font-weight: bold; color: #6f42c1; margin-bottom: 5px;">「ふっかつのじゅもん」を貼り付けてください</p>
+        <p class="retro-font jumon-help-text">
+            ふっかつのじゅもんとは？<br>
+            「計算＆保存」を実行したあとに発行した「ふっかつのじゅもん」を入力すると、前回の入力内容を復元できます
+        </p>
         <input type="text" id="jumon-text-input" placeholder="ここに英数字列を貼り付け">
         <button class="btn btn-ss" style="width:100%;" onclick="restoreFromJumon()">ふっかつする</button>
     </div>
@@ -134,9 +138,11 @@
 
 <div id="modal-overlay">
     <div class="modal-content">
+        <span class="modal-msg-main">この文字列、またはURLを保存してください。</span>
+        <span class="modal-msg-sub">URLからアクセスするか、「ふっかつのじゅもんを入力する」に入力すれば現在の情報を復元できます。</span>
         <div id="jumon-str" class="jumon-display"></div>
         <div class="btn-container" style="margin-top:0;">
-            <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLコピー</button>
+            <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLをコピー</button>
             <button class="btn btn-copy" style="min-width:120px;" onclick="copyToClipboard('jumon')">じゅもんのみ</button>
             <button class="btn" style="min-width:120px; background:#ccc;" onclick="closeModal()">閉じる</button>
         </div>
@@ -144,9 +150,6 @@
 </div>
 
 <script>
-    /**
-     * 装備在庫カンリくん Ver 1.3.6
-     */
     const EQUIP_LIST = [
         { name: "帽子", def: 3 }, { name: "手袋", def: 2 }, { name: "靴", def: 3 },
         { name: "バッグ", def: 2 }, { name: "バッジ", def: 2 }, { name: "ヘアピン", def: 4 },
@@ -310,7 +313,7 @@
             } else { currentRanking.shift(); }
         }
 
-        // --- 最終最適化：差し替え型デモートロジック Ver 2.1 ---
+        // --- 外科的順位入れ替えロジック Ver 2.1 ---
         let adjusted = true;
         let limit = 0;
         while (adjusted && limit < 10) {
@@ -320,10 +323,10 @@
                 for (let i = 0; i < j; i++) {
                     let mainI = parseEquip(MASTER_STAGE_DATA[proposedStages[i]])[0];
                     if (poolJ.some(d => d.tier === mainI.tier && d.name === mainI.name)) {
-                        let coveringStage = proposedStages.splice(j, 1)[0]; // 後ろの「カバーした側」を抜く
-                        let coveredStage = proposedStages.splice(i, 1)[0];  // 前の「カバーされた側」を抜く
-                        proposedStages.splice(i, 0, coveringStage);      // 元々「カバーされた側」がいた順位に挿入
-                        proposedStages.push(coveredStage);               // カバーされた側は最後尾へ
+                        let coveringStage = proposedStages.splice(j, 1)[0]; 
+                        let coveredStage = proposedStages.splice(i, 1)[0];  
+                        proposedStages.splice(i, 0, coveringStage);      
+                        proposedStages.push(coveredStage);               
                         adjusted = true; break;
                     }
                 }
@@ -379,20 +382,37 @@
 
     async function generateCanvas() {
         const target = document.getElementById('capture-target');
+        const table = document.getElementById('result-table');
         target.classList.add('capture-mode');
-        const canvas = await html2canvas(target, { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: 890, windowWidth: 890 });
+        // コンテンツ全体の幅を計算
+        const contentWidth = Math.max(890, table.scrollWidth + 40);
+        const options = { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: contentWidth, windowWidth: contentWidth };
+        const canvas = await html2canvas(target, options);
         target.classList.remove('capture-mode');
         return canvas;
     }
-    async function takeScreenshot() { const c = await generateCanvas(); const l = document.createElement('a'); l.href = c.toDataURL(); l.download = `inventory.png`; l.click(); }
+
+    async function takeScreenshot() {
+        try {
+            const canvas = await generateCanvas();
+            const link = document.createElement('a');
+            const now = new Date();
+            link.href = canvas.toDataURL("image/png");
+            link.download = `装備在庫カンリくん_${now.getMonth()+1}月${now.getDate()}日.png`;
+            link.click();
+        } catch (e) { alert("保存に失敗しました。"); }
+    }
+
     async function copyScreenshot() {
         const btn = document.getElementById('copy-btn');
-        const c = await generateCanvas(); 
-        c.toBlob(b => {
-            navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
-            btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
-            setTimeout(() => { btn.innerText = "画像としてコピー"; btn.style.backgroundColor = "#6c757d"; }, 2000);
-        });
+        try {
+            const canvas = await generateCanvas(); 
+            canvas.toBlob(b => {
+                navigator.clipboard.write([new ClipboardItem({"image/png":b})]);
+                btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
+                setTimeout(() => { btn.innerText = "画像としてコピー"; btn.style.backgroundColor = "#6c757d"; }, 2000);
+            });
+        } catch (err) { alert("コピーに失敗しました。"); }
     }
     window.addEventListener('DOMContentLoaded', initApp);
 </script>
