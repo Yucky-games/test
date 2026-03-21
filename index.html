@@ -14,17 +14,16 @@
         .credit:hover { color: #005bac; border-bottom: 1px solid #005bac; }
         h1 { color: #005bac; font-size: 1.6rem; border-bottom: 2px solid #005bac; padding-bottom: 10px; margin-top: 0; padding-right: 120px; }
         h2 { font-size: 1rem; margin-top: 25px; color: #333; background: #f0f4f8; padding: 8px; border-radius: 4px; display: flex; align-items: center; flex-wrap: wrap; }
-        .sub-desc { font-size: 0.75rem; font-weight: normal; color: #666; margin-left: 10px; }
         .grid-targets { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .target-box { display: flex; flex-direction: column; }
         .target-box label { font-size: 0.8rem; font-weight: bold; margin-bottom: 4px; }
         .target-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .scroll-x { overflow-x: auto; margin-top: 10px; border: 1px solid #ddd; background: #fff; }
-        table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 0.9rem; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 8px 1px; text-align: center; overflow: hidden; }
+        table { border-collapse: collapse; width: 100%; min-width: 800px; font-size: 0.9rem; table-layout: auto; }
+        th, td { border: 1px solid #eee; padding: 8px 2px; text-align: center; }
         th { background: #f8f9fa; }
-        .row-label { text-align: left; font-weight: bold; padding-left: 8px; background: #fafafa; width: 110px; }
-        input[type="number"] { width: 85%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; text-align: right; font-size: 0.85rem; }
+        .row-label { text-align: left; font-weight: bold; padding-left: 10px; background: #fafafa; width: 110px; }
+        input[type="number"] { width: 80%; padding: 5px; border: 1px solid #ddd; border-radius: 3px; text-align: right; }
         #inventory-body tr:nth-child(even), #inventory-body tr:nth-child(even) .row-label { background-color: #fffde7; }
         .btn-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         .btn { padding: 12px 20px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; min-width: 160px; }
@@ -38,33 +37,42 @@
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:600px; width:95%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
         .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto; }
+
+        /* iPhone Safari用画像表示モーダル */
         #preview-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
         .preview-img-container { background:#fff; padding:10px; border-radius:8px; max-width:95%; max-height:80%; overflow: auto; }
         #preview-img { width: 100%; height: auto; display: block; }
         .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; }
+
         .bg-red { background-color: #ffebed !important; color: #d32f2f; font-weight: bold; }
         .bg-yellow { background-color: #fffde7 !important; color: #856404; font-weight: bold; }
         .bg-green { background-color: #f1fbf2 !important; color: #2e7d32; }
         .summary-header { background: #f0f4f8; font-weight: bold; }
-        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 840px; box-sizing: border-box; }
+
+        /* 周回提案エリア */
+        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; width: 100%; box-sizing: border-box; }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 0; font-weight: bold; font-size: 1.0rem; }
         .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
+
         @media screen and (max-width: 880px) {
-            .recommendation-area { width: 100%; }
             .stage-flow { flex-direction: column; align-items: stretch; gap: 8px; }
             .stage-box { width: 100%; font-size: min(3.8vw, 0.9rem); box-sizing: border-box; display: block; text-align: center; }
         }
-        /* キャプチャ時強制スタイル */
+
+        /* キャプチャ時強制スタイル（PC版の横幅をエミュレート） */
         .capture-mode { overflow: visible !important; width: 1100px !important; min-width: 1100px !important; position: absolute; left: -9999px; }
-        .capture-mode .recommendation-area { width: 840px !important; }
+        .capture-mode table { width: 100% !important; }
+        .capture-mode th, .capture-mode td { padding: 8px 1px !important; } /* キャプチャ時はさらに詰め */
         .capture-mode .stage-flow { flex-direction: row !important; }
         .capture-mode .stage-box { width: auto !important; font-size: 1.0rem !important; }
         .capture-mode .scroll-x { overflow: visible !important; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <a href="https://x.com/yucky_games" target="_blank" rel="noopener noreferrer" class="credit">made by ゆっきー</a>
     <h1>装備在庫カンリくん</h1>
@@ -110,40 +118,169 @@
         </div>
     </div>
 </div>
-<div id="modal-overlay"><div class="modal-content"><span class="modal-msg-main">じゅもんを保存してください</span><div id="jumon-str" class="jumon-display"></div><div class="btn-container" style="margin-top:0;"><button class="btn btn-ss" onclick="copyToClipboard('url')">URLコピー</button><button class="btn btn-copy" onclick="copyToClipboard('jumon')">じゅもんのみ</button><button class="btn" style="background:#ccc;" onclick="closeModal()">閉じる</button></div></div></div>
-<div id="preview-modal" onclick="closeCopyPreview()"><div class="preview-guide">画像を長押しして<br>「コピー」を選択してください</div><div class="preview-img-container" onclick="event.stopPropagation()"><img id="preview-img" src="" alt="preview"></div></div>
+
+<div id="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-msg-main">じゅもんを保存してください</span>
+        <div id="jumon-str" class="jumon-display"></div>
+        <div class="btn-container" style="margin-top:0;">
+            <button class="btn btn-ss" onclick="copyToClipboard('url')">URLコピー</button>
+            <button class="btn btn-copy" onclick="copyToClipboard('jumon')">じゅもんのみ</button>
+            <button class="btn" style="background:#ccc;" onclick="closeModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<div id="preview-modal" onclick="closeCopyPreview()">
+    <div class="preview-guide">画像を長押しして<br>「コピー」を選択してください</div>
+    <div class="preview-img-container" onclick="event.stopPropagation()">
+        <img id="preview-img" src="" alt="preview">
+    </div>
+</div>
+
 <script>
     const EQUIP_LIST = [{ name: "帽子", def: 3 }, { name: "手袋", def: 2 }, { name: "靴", def: 3 }, { name: "バッグ", def: 2 }, { name: "バッジ", def: 2 }, { name: "ヘアピン", def: 4 }, { name: "お守り", def: 1 }, { name: "時計", def: 4 }, { name: "ネックレス", def: 2 }];
     const REQ_PER_PERSON = { 2: 40, 3: 45, 4: 50, 5: 55, 6: 65, 7: 65, 8: 60, 9: 50, 10: 60 };
     const TIERS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
     const STORAGE_KEY = 'ba_equip_manager_data';
+
     const MASTER_STAGE_DATA = { "1-1":"T1靴/T1手袋/T1帽子","1-2":"T1バッグ/T1手袋/T1帽子","1-3":"T1靴/T1手袋/T1帽子","1-4":"T1ヘアピン/T1バッグ/T1靴","1-5":"T1バッジ/T1バッグ/T1帽子","2-1":"T1時計/T1ヘアピン/T1バッジ","2-2":"T1ネックレス/T1時計/T1ヘアピン","2-3":"T1時計/T1お守り/T1ヘアピン","2-4":"T1ネックレス/T1時計/T1お守り","2-5":"T1ネックレス/T1お守り/T1バッジ","4-1":"T2帽子/T2手袋/T2靴","4-2":"T2帽子/T2手袋/T2バッグ","4-3":"T2帽子/T2手袋/T2靴","4-4":"T2靴/T2バッグ/T2ヘアピン","4-5":"T2帽子/T2バッグ/T2バッジ","5-1":"T2バッジ/T2ヘアピン/T2時計","5-2":"T2ヘアピン/T2時計/T2ネックレス","5-3":"T2ヘアピン/T2お守り/T2時計","5-4":"T2お守り/T2時計/T2ネックレス","5-5":"T2バッジ/T2お守り/T2ネックレス","7-1":"T3帽子/T3手袋/T3靴","7-2":"T3帽子/T3手袋/T3バッグ","7-3":"T3帽子/T3手袋/T3靴","7-4":"T3靴/T3バッグ/T3ヘアピン","7-5":"T3帽子/T3バッグ/T3バッジ","8-1":"T3バッジ/T3ヘアピン/T3時計","8-2":"T3ヘアピン/T3時計/T3ネックレス","8-3":"T3ヘアピン/T3お守り/T3時計","8-4":"T3お守り/T3時計/T3ネックレス","8-5":"T3バッジ/T3お守り/T3ネックレス","10-1":"T4帽子/T4手袋/T4靴","10-2":"T4帽子/T4手袋/T4バッグ","10-3":"T4帽子/T4手袋/T4靴","10-4":"T4靴/T4バッグ/T4ヘアピン","10-5":"T4帽子/T4バッグ/T4バッジ","11-1":"T4バッジ/T4ヘアピン/T4時計","11-2":"T4ヘアピン/T4時計/T4ネックレス","11-3":"T4ヘアピン/T4お守り/T4時計","11-4":"T4お守り/T4時計/T4ネックレス","11-5":"T4バッジ/T4お守り/T4ネックレス","13-1":"T5手袋/T5帽子/T5靴","13-2":"T5バッジ/T5手袋/T5帽子","13-3":"T5ヘアピン/T5帽子/T5靴","13-4":"T5バッグ/T5ヘアピン/T5靴","13-5":"T5バッジ/T5手袋/T5帽子","14-1":"T5お守り/T5時計/T5ネックレス","14-2":"T5ヘアピン/T5お守り/T5時計","14-3":"T5バッグ/T5時計/T5ネックレス","14-4":"T5バッジ/T5お守り/T5時計","14-5":"T5バッグ/T5ヘアピン/T5ネックレス","16-1":"T6手袋/T6靴/T6帽子","16-2":"T6手袋/T6帽子/T6バッジ","16-3":"T6靴/T6帽子/T6ヘアピン","16-4":"T6靴/T6ヘアピン/T6バッグ","16-5":"T6手袋/T6帽子/T6バッジ","17-1":"T6お守り/T6ネックレス/T6時計","17-2":"T6ヘアピン/T6お守り/T6時計","17-3":"T6バッグ/T6ネックレス/T6時計","17-4":"T6バッジ/T6お守り/T6時計","17-5":"T6ヘアピン/T6バッグ/T6ネックレス","19-1":"T7靴/T7手袋/T7帽子","19-2":"T7バッジ/T7手袋/T7帽子","19-3":"T7ヘアピン/T7靴/T7帽子","19-4":"T7ヘアピン/T7バッグ/T7靴","19-5":"T7バッジ/T7手袋/T7帽子","20-1":"T7ネックレス/T7時計/T7お守り","20-2":"T7時計/T7お守り/T7ヘアピン","20-3":"T7ネックレス/T7時計/T7バッグ","20-4":"T7時計/T7お守り/T7バッジ","20-5":"T7ネックレス/T7ヘアピン/T7バッグ","22-1":"T8靴/T8手袋/T8帽子","22-2":"T8バッジ/T8手袋/T8帽子","22-3":"T8ヘアピン/T8靴/T8帽子","22-4":"T8ヘアピン/T8バッグ/T8靴","22-5":"T8バッジ/T8手袋/T8帽子","23-1":"T8ネックレス/T8時計/T8お守り","23-2":"T8時計/T8お守り/T8ヘアピン","23-3":"T8ネックレス/T8時計/T8バッグ","23-4":"T8時計/T8お守り/T8バッジ","23-5":"T8ネックレス/T8ヘアピン/T8バッグ","25-1":"T9靴/T9手袋/T9帽子","25-2":"T9バッジ/T9手袋/T9帽子","25-3":"T9ヘアピン/T9靴/T9帽子","25-4":"T9ヘアピン/T9バッジ/T9バッグ","25-5":"T9バッジ/T9手袋/T9帽子","26-1":"T9ネックレス/T9時計/T9お守り","26-2":"T9時計/T9ヘアピン/T9靴","26-3":"T9時計/T9お守り/T9バッグ","26-4":"T9時計/T9バッジ/T9手袋","26-5":"T9ネックレス/T9ヘアピン/T9バッグ","28-1":"T10靴/T10帽子/T10手袋","28-2":"T10バッジ/T10帽子/T10手袋","28-3":"T10ヘアピン/T10靴/T10帽子","28-4":"T10ヘアピン/T10バッジ/T10バッグ","28-5":"T10バッジ/T10帽子/T10手袋","29-1":"T10お守り/T10ネックレス/T10時計","29-2":"T10ヘアピン/T10靴/T10時計","29-3":"T10バッグ/T10お守り/T10時計","29-4":"T10バッジ/T10手袋/T10時計","29-5":"T10ヘアピン/T10バッグ/T10ネックレス" };
+
     function isIosSafari() { const ua = window.navigator.userAgent; return !!ua.match(/iPhone/i) && (!!ua.match(/Safari/i) && !ua.match(/CriOS/i) && !ua.match(/Chrome/i)); }
-    function initApp() { const targetDiv = document.getElementById('target-inputs'); const invBody = document.getElementById('inventory-body'); EQUIP_LIST.forEach((eq, i) => { targetDiv.innerHTML += `<div class="target-box"><label>${eq.name}</label><input type="number" id="target-${i}" value="${eq.def}" min="0" onfocus="this.select()"></div>`; let row = `<tr><td class="row-label">${eq.name}</td>`; TIERS.forEach(t => row += `<td><input type="number" id="inv-${i}-${t}" value="0" min="0" onfocus="this.select()"></td>`); invBody.innerHTML += row + `</tr>`; }); let boxRow = `<tr><td class="row-label">選択ボックス</td>`; TIERS.forEach(t => boxRow += `<td><input type="number" id="box-${t}" value="0" min="0" onfocus="this.select()"></td>`); invBody.innerHTML += boxRow + `</tr>`; const hash = window.location.hash.substring(1); if (hash) { if (loadFromDataString(hash)) runCalculation(); } else { const saved = localStorage.getItem(STORAGE_KEY); if (saved) loadFromDataString(saved); } }
-    function runCalculation() { const resBody = document.getElementById('result-body'); const sumBody = document.getElementById('summary-body'); const now = new Date(); document.getElementById('result-title').innerText = `計算結果：目標との差分（${now.getMonth() + 1}月${now.getDate()}日時点）`; resBody.innerHTML = ""; sumBody.innerHTML = ""; let tDeficits = {}; TIERS.forEach(t => tDeficits[t] = 0); let snapshot = [];
-        EQUIP_LIST.forEach((eq, i) => { const targetNum = parseInt(document.getElementById(`target-${i}`).value) || 0; let row = `<tr><td class="row-label">${eq.name}</td>`; TIERS.forEach(t => { const diff = (parseInt(document.getElementById(`inv-${i}-${t}`).value) || 0) - (REQ_PER_PERSON[t] * targetNum); let cls = diff < 0 ? "bg-red" : (diff < 100 ? "bg-yellow" : "bg-green"); if (diff < 0) tDeficits[t] += diff; row += `<td class="${cls}">${diff}</td>`; snapshot.push({ tier: t, name: eq.name, diff: diff }); }); resBody.innerHTML += row + `</tr>`; });
-        let htmlDeficit = `<tr class="summary-header"><td class="row-label">T別不足数合計</td>`; TIERS.forEach(t => htmlDeficit += `<td>${tDeficits[t]}</td>`); sumBody.innerHTML += htmlDeficit + `</tr>`;
-        let boxDiffs = {}; let htmlFinal = `<tr class="summary-header"><td class="row-label">ボックス考慮後</td>`; TIERS.forEach(t => { const finalVal = tDeficits[t] + (parseInt(document.getElementById(`box-${t}`).value) || 0); boxDiffs[t] = finalVal; let cls = finalVal < 0 ? "bg-red" : (finalVal < 100 ? "bg-yellow" : "bg-green"); htmlFinal += `<td class="${cls}">${finalVal}</td>`; }); sumBody.innerHTML += htmlFinal + `</tr>`;
-        document.getElementById('result-area').style.display = 'block'; localStorage.setItem(STORAGE_KEY, generateDataString()); generateRoadmap(snapshot, boxDiffs); }
+    function initApp() {
+        const targetDiv = document.getElementById('target-inputs');
+        const invBody = document.getElementById('inventory-body');
+        EQUIP_LIST.forEach((eq, i) => {
+            targetDiv.innerHTML += `<div class="target-box"><label>${eq.name}</label><input type="number" id="target-${i}" value="${eq.def}" min="0" onfocus="this.select()"></div>`;
+            let row = `<tr><td class="row-label">${eq.name}</td>`;
+            TIERS.forEach(t => row += `<td><input type="number" id="inv-${i}-${t}" value="0" min="0" onfocus="this.select()"></td>`);
+            invBody.innerHTML += row + `</tr>`;
+        });
+        let boxRow = `<tr><td class="row-label">選択ボックス</td>`;
+        TIERS.forEach(t => boxRow += `<td><input type="number" id="box-${t}" value="0" min="0" onfocus="this.select()"></td>`);
+        invBody.innerHTML += boxRow + `</tr>`;
+        const hash = window.location.hash.substring(1);
+        if (hash) { if (loadFromDataString(hash)) runCalculation(); } 
+        else { const saved = localStorage.getItem(STORAGE_KEY); if (saved) loadFromDataString(saved); }
+    }
+
+    function runCalculation() {
+        const resBody = document.getElementById('result-body');
+        const sumBody = document.getElementById('summary-body');
+        const now = new Date();
+        document.getElementById('result-title').innerText = `計算結果：目標との差分（${now.getMonth() + 1}月${now.getDate()}日時点）`;
+        resBody.innerHTML = ""; sumBody.innerHTML = "";
+        let tDeficits = {}; TIERS.forEach(t => tDeficits[t] = 0);
+        let snapshot = [];
+        EQUIP_LIST.forEach((eq, i) => {
+            const targetNum = parseInt(document.getElementById(`target-${i}`).value) || 0;
+            let row = `<tr><td class="row-label">${eq.name}</td>`;
+            TIERS.forEach(t => {
+                const diff = (parseInt(document.getElementById(`inv-${i}-${t}`).value) || 0) - (REQ_PER_PERSON[t] * targetNum);
+                let cls = diff < 0 ? "bg-red" : (diff < 100 ? "bg-yellow" : "bg-green");
+                if (diff < 0) tDeficits[t] += diff;
+                row += `<td class="${cls}">${diff}</td>`;
+                snapshot.push({ tier: t, name: eq.name, diff: diff });
+            });
+            resBody.innerHTML += row + `</tr>`;
+        });
+        let htmlDeficit = `<tr class="summary-header"><td class="row-label">T別不足数合計</td>`;
+        TIERS.forEach(t => htmlDeficit += `<td>${tDeficits[t]}</td>`);
+        sumBody.innerHTML += htmlDeficit + `</tr>`;
+        let boxDiffs = {};
+        let htmlFinal = `<tr class="summary-header"><td class="row-label">ボックス考慮後</td>`;
+        TIERS.forEach(t => {
+            const finalVal = tDeficits[t] + (parseInt(document.getElementById(`box-${t}`).value) || 0);
+            boxDiffs[t] = finalVal;
+            let cls = finalVal < 0 ? "bg-red" : (finalVal < 100 ? "bg-yellow" : "bg-green");
+            htmlFinal += `<td class="${cls}">${finalVal}</td>`;
+        });
+        sumBody.innerHTML += htmlFinal + `</tr>`;
+        document.getElementById('result-area').style.display = 'block';
+        localStorage.setItem(STORAGE_KEY, generateDataString());
+        generateRoadmap(snapshot, boxDiffs);
+    }
+
     function generateRoadmap(snapshot, boxDiffs) {
-        let allItems = snapshot.map(item => { let group = (boxDiffs[item.tier] < 0 && item.diff < 0) ? 1 : (item.diff < 0 ? 2 : 3); return { ...item, group, itemRank: EQUIP_LIST.findIndex(e => e.name === item.name) }; });
+        let allItems = snapshot.map(item => {
+            let group = (boxDiffs[item.tier] < 0 && item.diff < 0) ? 1 : (item.diff < 0 ? 2 : 3);
+            return { ...item, group, itemRank: EQUIP_LIST.findIndex(e => e.name === item.name) };
+        });
         allItems.sort((a, b) => a.group - b.group || a.diff - b.diff || b.tier - a.tier || a.itemRank - b.itemRank);
         let ranking = allItems.slice(0, 10).filter(item => item.diff < 0);
         if (ranking.length === 0) { document.getElementById('recommendation-display').style.display = 'none'; return; }
-        let proposed = []; let currentRanking = [...ranking]; let stages = Object.keys(MASTER_STAGE_DATA);
+        
+        let proposed = [];
+        let currentRanking = [...ranking];
+        let stages = Object.keys(MASTER_STAGE_DATA);
         const parseEq = (s) => s.split('/').map(p => { let m = p.trim().match(/T(\d+)(.+)/); return m ? { tier: parseInt(m[1]), name: m[2] } : null; });
+        
         while (currentRanking.length > 0 && proposed.length < 5) {
-            let target = currentRanking[0]; let best = null;
-            let mainCandidates = stages.map(key => { let drops = parseEq(MASTER_STAGE_DATA[key]); if (drops[0] && drops[0].tier === target.tier && drops[0].name === target.name) return { key, overlap: drops.slice(1).filter(s => s && currentRanking.some(r => r.tier === s.tier && r.name === s.name)).length }; return null; }).filter(c => c !== null);
+            let target = currentRanking[0];
+            let best = null;
+            let mainCandidates = stages.map(key => {
+                let drops = parseEq(MASTER_STAGE_DATA[key]);
+                if (drops[0] && drops[0].tier === target.tier && drops[0].name === target.name) return { key, overlap: drops.slice(1).filter(s => s && currentRanking.some(r => r.tier === s.tier && r.name === s.name)).length };
+                return null;
+            }).filter(c => c !== null);
             if (mainCandidates.length > 0) { mainCandidates.sort((a, b) => b.overlap - a.overlap); best = mainCandidates[0].key; }
-            else { let subCandidates = stages.filter(key => parseEq(MASTER_STAGE_DATA[key]).slice(1).some(s => s && s.tier === target.tier && s.name === target.name)); if (subCandidates.length > 0) { subCandidates.sort((a, b) => (snapshot.find(s => s.tier === parseEq(MASTER_STAGE_DATA[a])[0].tier && s.name === parseEq(MASTER_STAGE_DATA[a])[0].name)?.diff || 0) - (snapshot.find(s => s.tier === parseEq(MASTER_STAGE_DATA[b])[0].tier && s.name === parseEq(MASTER_STAGE_DATA[b])[0].name)?.diff || 0)); best = subCandidates[0]; } }
-            if (best) { proposed.push(best); let pool = parseEq(MASTER_STAGE_DATA[best]); if (pool[0] && pool[0].tier >= 4) pool = pool.concat(pool.filter(d=>d).map(d => ({ tier: d.tier - 2, name: d.name }))); if (pool[0] && pool[0].tier >= 5) pool = pool.concat(pool.filter(d=>d).map(d => ({ tier: d.tier - 3, name: d.name }))); currentRanking = currentRanking.filter(r => !pool.some(d => d && d.tier === r.tier && d.name === r.name)); } else { currentRanking.shift(); }
+            else {
+                let subCandidates = stages.filter(key => parseEq(MASTER_STAGE_DATA[key]).slice(1).some(s => s && s.tier === target.tier && s.name === target.name));
+                if (subCandidates.length > 0) {
+                    subCandidates.sort((a, b) => (snapshot.find(s => s.tier === parseEq(MASTER_STAGE_DATA[a])[0].tier && s.name === parseEq(MASTER_STAGE_DATA[a])[0].name)?.diff || 0) - (snapshot.find(s => s.tier === parseEq(MASTER_STAGE_DATA[b])[0].tier && s.name === parseEq(MASTER_STAGE_DATA[b])[0].name)?.diff || 0));
+                    best = subCandidates[0];
+                }
+            }
+            if (best) {
+                proposed.push(best);
+                let pool = parseEq(MASTER_STAGE_DATA[best]);
+                if (pool[0] && pool[0].tier >= 4) pool = pool.concat(pool.filter(d=>d).map(d => ({ tier: d.tier - 2, name: d.name })));
+                if (pool[0] && pool[0].tier >= 5) pool = pool.concat(pool.filter(d=>d).map(d => ({ tier: d.tier - 3, name: d.name })));
+                currentRanking = currentRanking.filter(r => !pool.some(d => d && d.tier === r.tier && d.name === r.name));
+            } else { currentRanking.shift(); }
         }
-        const listEl = document.getElementById('stage-list'); listEl.innerHTML = proposed.map((key, idx) => `<span class="stage-box">${["①", "②", "③", "④", "⑤"][idx]} ${key}（${MASTER_STAGE_DATA[key]}）</span>`).join("　"); document.getElementById('recommendation-display').style.display = 'block'; }
-    async function generateCanvas() { const target = document.getElementById('capture-target'); target.classList.add('capture-mode'); const options = { backgroundColor: "#ffffff", scale: 2, width: 1100, windowWidth: 1100, useCORS: true }; const canvas = await html2canvas(target, options); target.classList.remove('capture-mode'); return canvas; }
-    async function openCopyPreview() { const btn = document.getElementById('copy-btn'); if (!isIosSafari()) { try { const canvas = await generateCanvas(); canvas.toBlob(async (blob) => { const item = new ClipboardItem({ "image/png": blob }); await navigator.clipboard.write([item]); btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745"; setTimeout(() => { btn.innerText = "画像としてコピー"; btn.style.backgroundColor = "#6c757d"; }, 2000); }); } catch (e) { alert("コピー失敗"); } return; } const canvas = await generateCanvas(); document.getElementById('preview-img').src = canvas.toDataURL("image/png"); document.getElementById('preview-modal').style.display = 'flex'; }
+        const listEl = document.getElementById('stage-list');
+        listEl.innerHTML = proposed.map((key, idx) => `<span class="stage-box">${["①", "②", "③", "④", "⑤"][idx]} ${key}（${MASTER_STAGE_DATA[key]}）</span>`).join("　");
+        document.getElementById('recommendation-display').style.display = 'block';
+    }
+
+    async function generateCanvas() {
+        const target = document.getElementById('capture-target');
+        target.classList.add('capture-mode');
+        const options = { backgroundColor: "#ffffff", scale: 2, width: 1100, windowWidth: 1100, useCORS: true };
+        const canvas = await html2canvas(target, options);
+        target.classList.remove('capture-mode');
+        return canvas;
+    }
+
+    async function openCopyPreview() {
+        const btn = document.getElementById('copy-btn');
+        if (!isIosSafari()) {
+            try {
+                const canvas = await generateCanvas();
+                canvas.toBlob(async (blob) => {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    await navigator.clipboard.write([item]);
+                    const oldText = btn.innerText; btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = "#6c757d"; }, 2000);
+                });
+            } catch (e) { alert("コピー失敗"); }
+            return;
+        }
+        const canvas = await generateCanvas();
+        document.getElementById('preview-img').src = canvas.toDataURL("image/png");
+        document.getElementById('preview-modal').style.display = 'flex';
+    }
     function closeCopyPreview() { document.getElementById('preview-modal').style.display = 'none'; }
-    async function takeScreenshot() { const canvas = await generateCanvas(); const now = new Date(); const dateStr = (now.getMonth() + 1) + "月" + now.getDate() + "日"; const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `装備在庫カンリくん_${dateStr}.png`; link.click(); }
+    async function takeScreenshot() {
+        const canvas = await generateCanvas();
+        const now = new Date();
+        const dateStr = (now.getMonth() + 1) + "月" + now.getDate() + "日";
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = `装備在庫カンリくん_${dateStr}.png`;
+        link.click();
+    }
     function confirmReset() { if (confirm("リセットしますか？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
     function generateDataString() { const data = []; EQUIP_LIST.forEach((_, i) => data.push(parseInt(document.getElementById(`target-${i}`).value) || 0)); EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => data.push(parseInt(document.getElementById(`inv-${i}-${t}`).value) || 0))); TIERS.forEach(t => data.push(parseInt(document.getElementById(`box-${t}`).value) || 0)); let bytes = []; data.forEach(v => { while (v >= 0x80) { bytes.push((v & 0x7f) | 0x80); v >>>= 7; } bytes.push(v); }); return btoa(String.fromCharCode(...pako.deflate(new Uint8Array(bytes)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
     function loadFromDataString(str) { try { const bin = atob(str.replace(/-/g, '+').replace(/_/g, '/')); const decomp = pako.inflate(new Uint8Array(bin.length).map((_,i) => bin.charCodeAt(i))); let data = [], i = 0; while (i < decomp.length) { let v = 0, shift = 0, b; do { b = decomp[i++]; v |= (b & 0x7f) << shift; shift += 7; } while (b & 0x80); data.push(v); } let ptr = 0; EQUIP_LIST.forEach((_, i) => document.getElementById(`target-${i}`).value = data[ptr++]); EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => document.getElementById(`inv-${i}-${t}`).value = data[ptr++])); TIERS.forEach(t => document.getElementById(`box-${t}`).value = data[ptr++]); return true; } catch (e) { return false; } }
