@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- 
+  PROJECT: 装備在庫カンリくん
+  VERSION: 1.2.3 (UIテキスト1.1.0準拠 + 最新アルゴリズム/コピー機能)
+  UPDATE: 2024/03/21
+  AUTHOR: ゆっきー & Gemini
+-->
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -36,8 +42,11 @@
         .btn-ss { background: #28a745; color: #fff; box-shadow: 0 4px 0 #1e7e34; }
         #jumon-input-area { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; border: 2px solid #6f42c1; }
         #jumon-text-input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; font-family: monospace; box-sizing: border-box; }
+        .jumon-help-text { font-size: 0.8rem; color: #666; margin-top: 5px; margin-bottom: 15px; line-height: 1.5; }
         #modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; }
+        .modal-content { background:#fff; padding:25px; border-radius:12px; max-width:500px; width:90%; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-msg-main { font-weight: bold; margin-bottom: 8px; display: block; font-size: 1rem; }
+        .modal-msg-sub { font-size: 0.8rem; color: #666; display: block; margin-bottom: 20px; line-height: 1.5; }
         .jumon-display { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 20px; border: 1px solid #ddd; max-height: 100px; overflow-y: auto; }
         .bg-red { background-color: #ffebed !important; color: #d32f2f; font-weight: bold; }
         .bg-yellow { background-color: #fffde7 !important; color: #856404; font-weight: bold; }
@@ -56,7 +65,7 @@
         #preview-img { width: 100%; height: auto; display: block; }
         .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; }
 
-        /* 撮影用特殊クラス */
+        /* キャプチャ用特殊クラス */
         .capture-mode { overflow: visible !important; width: fit-content !important; min-width: 950px !important; position: absolute; left: -9999px; }
         .capture-mode .scroll-x { overflow: visible !important; width: 100% !important; }
     </style>
@@ -66,7 +75,10 @@
 <div class="container">
     <a href="https://x.com/yucky_games" target="_blank" rel="noopener noreferrer" class="credit">made by ゆっきー</a>
     <h1>装備在庫カンリくん</h1>
-    <h2>[1] 各装備の目標確保人数を設定</h2>
+    <h2>
+        [1] 各装備の目標確保人数を設定
+        <span class="sub-desc">各装備が何人分あればよいか設定します。デフォルトで入っているのはオススメの確保人数です。</span>
+    </h2>
     <div id="target-inputs" class="grid-targets"></div>
     <h2>[2] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
     <div class="scroll-x"><table><thead><tr id="table-head"><th>アイテム</th></tr></thead><tbody id="inventory-body"></tbody></table></div>
@@ -76,14 +88,19 @@
         <button class="btn btn-reset" onclick="confirmReset()">リセット</button>
     </div>
     <div id="jumon-input-area">
-        <input type="text" id="jumon-text-input" placeholder="ここにじゅもんを貼り付け">
+        <p class="retro-font" style="margin-top:0; font-size: 1rem; font-weight: bold; color: #6f42c1; margin-bottom: 5px;">「ふっかつのじゅもん」を貼り付けてください</p>
+        <p class="retro-font jumon-help-text">
+            ふっかつのじゅもんとは？<br>
+            「計算＆保存」を実行したあとに発行した「ふっかつのじゅもん」を入力すると、前回の入力内容を復元できます
+        </p>
+        <input type="text" id="jumon-text-input" placeholder="ここに英数字列を貼り付け">
         <button class="btn btn-ss" style="width:100%;" onclick="restoreFromJumon()">ふっかつする</button>
     </div>
     <div id="result-area" style="display:none;">
         <div id="capture-target" style="padding: 20px; background: white; border-radius: 8px;">
             <h2 id="result-title" style="margin-top:0; background: none; border-bottom: 2px solid #eee;">計算結果</h2>
             <div class="scroll-x" id="table-wrapper"><table id="result-table"><thead><tr id="result-head"><th>アイテム</th></tr></thead><tbody id="result-body"></tbody><tbody id="summary-body"></tbody></table></div>
-            <div id="recommendation-display" class="recommendation-area" style="display:none;"><span class="recommendation-label">おすすめの周回ステージ（上位10ターゲット対応）：</span><div id="stage-list" class="stage-flow"></div></div>
+            <div id="recommendation-display" class="recommendation-area" style="display:none;"><span class="recommendation-label">おすすめの周回ステージ（最高効率は保証しません）</span><div id="stage-list" class="stage-flow"></div></div>
         </div>
         <div class="btn-container">
             <button id="copy-btn" class="btn btn-copy" onclick="handleCopyAction()">画像としてコピー</button>
@@ -93,7 +110,19 @@
     </div>
 </div>
 
-<div id="modal-overlay"><div class="modal-content"><span class="modal-msg-main">じゅもんを保存してください</span><div id="jumon-str" class="jumon-display"></div><div class="btn-container"><button class="btn btn-ss" onclick="copyToClipboard('url')">URLコピー</button><button class="btn btn-copy" onclick="copyToClipboard('jumon')">のみコピー</button><button class="btn" style="background:#ccc;" onclick="closeModal()">閉じる</button></div></div></div>
+<div id="modal-overlay">
+    <div class="modal-content">
+        <span class="modal-msg-main">この文字列、またはURLを保存してください。</span>
+        <span class="modal-msg-sub">URLからアクセスするか、「ふっかつのじゅもんを入力する」に入力すれば現在の情報を復元できます。</span>
+        <div id="jumon-str" class="jumon-display"></div>
+        <div class="btn-container" style="margin-top:0;">
+            <button class="btn btn-ss" style="min-width:120px;" onclick="copyToClipboard('url')">URLをコピー</button>
+            <button class="btn btn-copy" style="min-width:120px;" onclick="copyToClipboard('jumon')">じゅもんのみ</button>
+            <button class="btn" style="min-width:120px; background:#ccc;" onclick="closeModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
 <div id="preview-modal" onclick="closeCopyPreview()"><div class="preview-guide">画像を長押しして「コピー」を選択してください</div><div class="preview-img-container" onclick="event.stopPropagation()"><img id="preview-img" src=""></div></div>
 
 <script>
@@ -116,8 +145,8 @@
     }
 
     function runCalculation() {
-        const rB = document.getElementById('result-body'); const sB = document.getElementById('summary-body'); const now = new Date();
-        document.getElementById('result-title').innerText = `計算結果：目標との差分（${now.getMonth() + 1}月${now.getDate()}日時点）`;
+        const rB = document.getElementById('result-body'); const sB = document.getElementById('summary-body'); const rTitle = document.getElementById('result-title'); const now = new Date();
+        rTitle.innerText = `計算結果：目標との差分（${now.getMonth() + 1}月${now.getDate()}日時点）`;
         rB.innerHTML = ""; sB.innerHTML = ""; let tDeficits = {}; TIERS.forEach(t => tDeficits[t] = 0); let snapshot = [];
         EQUIP_LIST.forEach((eq, i) => {
             const tN = parseInt(document.getElementById(`target-${i}`).value) || 0; let r = `<tr><td class="row-label">${eq.name}</td>`;
@@ -132,16 +161,13 @@
         sB.innerHTML += hFinal + `</tr>`; document.getElementById('result-area').style.display = 'block'; localStorage.setItem(STORAGE_KEY, generateDataString()); generateRoadmap(snapshot, bDiffs);
     }
 
-    // アルゴリズム2 Ver 1.0
     function generateRoadmap(snapshot, boxDiffs) {
         let items = snapshot.map(i => ({...i, group: (boxDiffs[i.tier] < 0 && i.diff < 0) ? 1 : (i.diff < 0 ? 2 : 3), rank: EQUIP_LIST.findIndex(e => e.name === i.name)}));
         items.sort((a,b) => a.group - b.group || a.diff - b.diff || b.tier - a.tier || a.rank - b.rank);
         let ranking = items.slice(0, 10).filter(i => i.group < 3);
         if (ranking.length === 0) { document.getElementById('recommendation-display').style.display = 'none'; return; }
-
         let proposed = []; let curRank = [...ranking]; let stages = Object.keys(MASTER_STAGE_DATA);
         const parse = (s) => s.split('/').map(p => { let m = p.trim().match(/T(\d+)(.+)/); return m ? { tier: parseInt(m[1]), name: m[2] } : null; });
-
         while (curRank.length > 0 && proposed.length < 5) {
             let target = curRank[0]; let best = null;
             let cand = stages.map(k => { 
@@ -166,8 +192,6 @@
                 curRank = curRank.filter(r => !pPool.some(d => d && d.tier === r.tier && d.name === r.name));
             } else { curRank.shift(); }
         }
-
-        // 入れ替え
         let adj = true; while (adj) { adj = false; for (let j = 1; j < proposed.length; j++) { let pJ = parse(MASTER_STAGE_DATA[proposed[j]]); let pJLow = [...pJ.filter(d=>d).map(d=>({tier:d.tier-2,name:d.name})), ...pJ.filter(d=>d).map(d=>({tier:d.tier-3,name:d.name}))]; for (let i = 0; i < j; i++) { let mI = parse(MASTER_STAGE_DATA[proposed[i]])[0]; if (pJLow.some(d => d && d.tier === mI.tier && d.name === mI.name)) { let cov = proposed.splice(j, 1)[0]; proposed.splice(i, 0, cov); if (proposed.length > 4) proposed.push(proposed.splice(i+1, 1)[0]); adj = true; break; } } if (adj) break; } }
         document.getElementById('stage-list').innerHTML = proposed.slice(0,5).map((k, idx) => `<span class="stage-box">${["①", "②", "③", "④", "⑤"][idx]} ${k}（${MASTER_STAGE_DATA[k]}）</span>`).join("　"); document.getElementById('recommendation-display').style.display = 'block';
     }
@@ -183,7 +207,6 @@
             const canvas = await generateCanvas(); document.getElementById('preview-img').src = canvas.toDataURL("image/png"); document.getElementById('preview-modal').style.display = 'flex';
         } else {
             try {
-                // PC版安定化: 先にClipboardItemを作成し、Promiseで解決を待つ
                 const item = new ClipboardItem({
                     "image/png": new Promise(async (resolve, reject) => {
                         try {
@@ -202,12 +225,36 @@
     async function takeScreenshot() { try { const canvas = await generateCanvas(); const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = `装備在庫カンリくん_${new Date().getMonth()+1}月${new Date().getDate()}日.png`; link.click(); } catch (e) { alert("保存失敗"); } }
     function generateDataString() { const data = []; EQUIP_LIST.forEach((_, i) => data.push(parseInt(document.getElementById(`target-${i}`).value) || 0)); EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => data.push(parseInt(document.getElementById(`inv-${i}-${t}`).value) || 0))); TIERS.forEach(t => data.push(parseInt(document.getElementById(`box-${t}`).value) || 0)); let b = []; data.forEach(v => { while (v >= 0x80) { b.push((v & 0x7f) | 0x80); v >>>= 7; } b.push(v); }); return btoa(String.fromCharCode(...pako.deflate(new Uint8Array(b)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
     function loadFromDataString(str) { try { const bin = atob(str.replace(/-/g, '+').replace(/_/g, '/')); const data = [], decomp = pako.inflate(new Uint8Array(bin.length).map((_,i) => bin.charCodeAt(i))); let i = 0; while (i < decomp.length) { let v = 0, s = 0, b; do { b = decomp[i++]; v |= (b & 0x7f) << s; s += 7; } while (b & 0x80); data.push(v); } let p = 0; EQUIP_LIST.forEach((_, i) => document.getElementById(`target-${i}`).value = data[p++]); EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => document.getElementById(`inv-${i}-${t}`).value = data[p++])); TIERS.forEach(t => document.getElementById(`box-${t}`).value = data[p++]); return true; } catch (e) { return false; } }
-    function confirmReset() { if (confirm("リセットしますか？")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
-    function toggleJumonInput() { const a = document.getElementById('jumon-input-area'); a.style.display = a.style.display === "block" ? "none" : "block"; }
-    function restoreFromJumon() { let j = document.getElementById('jumon-text-input').value.trim(); if (j.includes('#')) j = j.split('#')[1]; if (loadFromDataString(j)) { alert("ふっかつ！"); runCalculation(); document.getElementById('jumon-input-area').style.display = "none"; } }
+    
+    function confirmReset() {
+        if (confirm("すべての入力情報をリセットして初期状態に戻します。復元するには「ふっかつのじゅもん」が必要になるので保存してください。")) {
+            EQUIP_LIST.forEach((eq, i) => document.getElementById(`target-${i}`).value = eq.def);
+            EQUIP_LIST.forEach((_, i) => TIERS.forEach(t => document.getElementById(`inv-${i}-${t}`).value = 0));
+            TIERS.forEach(t => document.getElementById(`box-${t}`).value = 0);
+            document.getElementById('jumon-text-input').value = "";
+            document.getElementById('jumon-input-area').style.display = "none";
+            document.getElementById('result-area').style.display = "none";
+            localStorage.removeItem(STORAGE_KEY);
+            history.replaceState(null, null, window.location.pathname);
+            alert("初期化しました。");
+        }
+    }
+
+    function toggleJumonInput() { const a = document.getElementById('jumon-input-area'); a.style.display = a.style.display === "block" ? "none" : "block"; if(a.style.display === "block") document.getElementById('jumon-text-input').focus(); }
+    
+    function restoreFromJumon() {
+        let j = document.getElementById('jumon-text-input').value.trim();
+        if (j.includes('#')) j = j.split('#')[1];
+        if (loadFromDataString(j)) {
+            alert("ふっかつしました！");
+            document.getElementById('jumon-input-area').style.display = "none";
+            runCalculation();
+        } else { alert("エラー：じゅもんが正しくありません。"); }
+    }
+
     function showExportModal() { document.getElementById('jumon-str').innerText = generateDataString(); document.getElementById('modal-overlay').style.display = 'flex'; }
     function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
-    async function copyToClipboard(type) { await navigator.clipboard.writeText(type === 'url' ? window.location.origin + window.location.pathname + "#" + document.getElementById('jumon-str').innerText : document.getElementById('jumon-str').innerText); alert("完了！"); }
+    async function copyToClipboard(type) { await navigator.clipboard.writeText(type === 'url' ? window.location.origin + window.location.pathname + "#" + document.getElementById('jumon-str').innerText : document.getElementById('jumon-str').innerText); alert("コピーしました！"); }
     window.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
