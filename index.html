@@ -54,7 +54,7 @@
         .summary-header { background: #f0f4f8; font-weight: bold; }
 
         /* 周回提案デザイン */
-        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; }
+        .recommendation-area { margin-top: 20px; padding: 15px; background: #fffdf0; border: 2px solid #ffeeba; border-radius: 8px; text-align: left; box-sizing: border-box; }
         .recommendation-label { font-weight: bold; color: #856404; margin-bottom: 10px; display: block; }
         .stage-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-weight: bold; font-size: 1.0rem; }
         .stage-box { padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
@@ -66,8 +66,12 @@
         .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; }
 
         /* キャプチャ用特殊クラス */
-        .capture-mode { overflow: visible !important; width: fit-content !important; min-width: 950px !important; position: absolute; left: -9999px; }
-        .capture-mode .scroll-x { overflow: visible !important; width: 100% !important; }
+        #capture-target.capture-mode { width: var(--capture-width, auto); max-width: none !important; box-sizing: border-box; }
+        #table-wrapper.capture-mode { overflow: visible !important; width: max-content !important; max-width: none !important; }
+        #table-wrapper.capture-mode table { min-width: auto !important; width: 100% !important; }
+        #capture-target.capture-mode .recommendation-area { width: 100%; }
+        #capture-target.capture-mode .stage-flow { align-items: flex-start; }
+        #capture-target.capture-mode .stage-box { white-space: normal; overflow-wrap: anywhere; }
     </style>
 </head>
 <body>
@@ -80,7 +84,10 @@
         <span class="sub-desc">各装備が何人分あればよいか設定します。デフォルトで入っているのはオススメの確保人数です。</span>
     </h2>
     <div id="target-inputs" class="grid-targets"></div>
-    <h2>[2] 装備設計図の数・選択ボックスの入力 (T2〜T10)</h2>
+    <h2>
+        [2] 装備設計図の数・選択ボックスの入力 (T2〜T10)
+        <span class="sub-desc">アイテム一覧のスクショから装備数を読み取るツールは<b><a href="https://kina-ko-m-ochi.net/soubi/" target="_blank" rel="noopener noreferrer">こちら</a></b>（きなこもちさん作）</span>
+    </h2>
     <div class="scroll-x"><table><thead><tr id="table-head"><th>アイテム</th></tr></thead><tbody id="inventory-body"></tbody></table></div>
     <div class="btn-container">
         <button class="btn btn-calc" onclick="runCalculation()">計算＆保存</button>
@@ -130,9 +137,29 @@
     const REQ_PER_PERSON = {2:40,3:45,4:50,5:55,6:65,7:65,8:60,9:50,10:60};
     const TIERS = [2,3,4,5,6,7,8,9,10];
     const STORAGE_KEY = 'ba_equip_manager_data';
-    const MASTER_STAGE_DATA = {"1-1":"T1靴/T1手袋/T1帽子","1-2":"T1バッグ/T1手袋/T1帽子","1-3":"T1靴/T1手袋/T1帽子","1-4":"T1ヘアピン/T1バッグ/T1靴","1-5":"T1バッジ/T1バッグ/T1帽子","2-1":"T1時計/T1ヘアピン/T1バッジ","2-2":"T1ネックレス/T1時計/T1ヘアピン","2-3":"T1時計/T1お守り/T1ヘアピン","2-4":"T1ネックレス/T1時計/T1お守り","2-5":"T1ネックレス/T1お守り/T1バッジ","4-1":"T2帽子/T2手袋/T2靴","4-2":"T2帽子/T2手袋/T2バッグ","4-3":"T2帽子/T2手袋/T2靴","4-4":"T2靴/T2バッグ/T2ヘアピン","4-5":"T2帽子/T2バッグ/T2バッジ","5-1":"T2バッジ/T2ヘアピン/T2時計","5-2":"T2ヘアピン/T2時計/T2ネックレス","5-3":"T2ヘアピン/T2お守り/T2時計","5-4":"T2お守り/T2時計/T2ネックレス","5-5":"T2バッジ/T2お守り/T2ネックレス","7-1":"T3帽子/T3手袋/T3靴","7-2":"T3帽子/T3手袋/T3バッグ","7-3":"T3帽子/T3手袋/T3靴","7-4":"T3靴/T3バッグ/T3ヘアピン","7-5":"T3帽子/T3バッグ/T3バッジ","8-1":"T3バッジ/T3ヘアピン/T3時計","8-2":"T3ヘアピン/T3時計/T3ネックレス","8-3":"T3ヘアピン/T3お守り/T3時計","8-4":"T3お守り/T3時計/T3ネックレス","8-5":"T3バッジ/T3お守り/T3ネックレス","10-1":"T4帽子/T4手袋/T4靴","10-2":"T4帽子/T4手袋/T4バッグ","10-3":"T4帽子/T4手袋/T4靴","10-4":"T4靴/T4バッグ/T4ヘアピン","10-5":"T4帽子/T4バッグ/T4バッジ","11-1":"T4バッジ/T4ヘアピン/T4時計","11-2":"T4ヘアピン/T4時計/T4ネックレス","11-3":"T4ヘアピン/T4お守り/T4時計","11-4":"T4お守り/T4時計/T4ネックレス","11-5":"T4バッジ/T4お守り/T4ネックレス","13-1":"T5手袋/T5帽子/T5靴","13-2":"T5バッジ/T5手袋/T5帽子","13-3":"T5ヘアピン/T5帽子/T5靴","13-4":"T5バッグ/T5ヘアピン/T5靴","13-5":"T5バッジ/T5手袋/T5帽子","14-1":"T5お守り/T5時計/T5ネックレス","14-2":"T5ヘアピン/T5お守り/T5時計","14-3":"T5バッグ/T5時計/T5ネックレス","14-4":"T5バッジ/T5お守り/T5時計","14-5":"T5バッグ/T5ヘアピン/T5ネックレス","16-1":"T6手袋/T6靴/T6帽子","16-2":"T6手袋/T6帽子/T6バッジ","16-3":"T6靴/T6帽子/T6ヘアピン","16-4":"T6靴/T6ヘアピン/T6バッグ","16-5":"T6手袋/T6帽子/T6バッジ","17-1":"T6お守り/T6ネックレス/T6時計","17-2":"T6ヘアピン/T6お守り/T6時計","17-3":"T6バッグ/T6ネックレス/T6時計","17-4":"T6バッジ/T6お守り/T6時計","17-5":"T6ヘアピン/T6バッグ/T6ネックレス","19-1":"T7靴/T7手袋/T7帽子","19-2":"T7バッジ/T7手袋/T7帽子","19-3":"T7ヘアピン/T7靴/T7帽子","19-4":"T7ヘアピン/T7バッグ/T7靴","19-5":"T7バッジ/T7手袋/T7帽子","20-1":"T7ネックレス/T7時計/T7お守り","20-2":"T7時計/T7お守り/T7ヘアピン","20-3":"T7ネックレス/T7時計/T7バッグ","20-4":"T7時計/T7お守り/T7バッジ","20-5":"T7ネックレス/T7ヘアピン/T7バッグ","22-1":"T8靴/T8手袋/T8帽子","22-2":"T8バッジ/T8手袋/T8帽子","22-3":"T8ヘアピン/T8靴/T8帽子","22-4":"T8ヘアピン/T8バッグ/T8靴","22-5":"T8バッジ/T8手袋/T8帽子","23-1":"T8ネックレス/T8時計/T8お守り","23-2":"T8時計/T8お守り/T8ヘアピン","23-3":"T8ネックレス/T8時計/T8バッグ","23-4":"T8時計/T8お守り/T8バッジ","23-5":"T8ネックレス/T8ヘアピン/T8バッグ","25-1":"T9靴/T9手袋/T9帽子","25-2":"T9バッジ/T9手袋/T9帽子","25-3":"T9ヘアピン/T9靴/T9帽子","25-4":"T9ヘアピン/T9バッジ/T9バッグ","25-5":"T9バッジ/T9手袋/T9帽子","26-1":"T9ネックレス/T9時計/T9お守り","26-2":"T9時計/T9ヘアピン/T9靴","26-3":"T9時計/T9お守り/T9バッグ","26-4":"T9時計/T9バッジ/T9手袋","26-5":"T9ネックレス/T9ヘアピン/T9バッグ","28-1":"T10靴/T10帽子/T10手袋","28-2":"T10バッジ/T10帽子/T10手袋","28-3":"T10ヘアピン/T10靴/T10帽子","28-4":"T10ヘアピン/T10バッジ/T10バッグ","28-5":"T10バッジ/T10帽子/T10手袋","29-1":"T10お守り/T10ネックレス/T10時計","29-2":"T10ヘアピン/T10靴/T10時計","29-3":"T10バッグ/T10お守り/T10時計","29-4":"T10バッジ/T10手袋/T10時計","29-5":"T10ヘアピン/T10バッグ/T10ネックレス"};
+    const MASTER_STAGE_DATA = {"1-1":"T1帽子/T1手袋/T1靴","1-2":"T1手袋/T1バッグ/T1帽子","1-3":"T1靴/T1帽子/T1手袋","1-4":"T1バッグ/T1靴/T1ヘアピン","1-5":"T1バッジ/T1バッグ/T1帽子","2-1":"T1ヘアピン/T1バッジ/T1時計","2-2":"T1ヘアピン/T1時計/T1ネックレス","2-3":"T1お守り/T1時計/T1ヘアピン","2-4":"T1時計/T1お守り/T1ネックレス","2-5":"T1ネックレス/T1バッジ/T1お守り","4-1":"T2帽子/T2手袋/T2靴","4-2":"T2手袋/T2バッグ/T2帽子","4-3":"T2靴/T2帽子/T2手袋","4-4":"T2バッグ/T2靴/T2ヘアピン","4-5":"T2バッジ/T2バッグ/T2帽子","5-1":"T2ヘアピン/T2バッジ/T2時計","5-2":"T2ヘアピン/T2時計/T2ネックレス","5-3":"T2お守り/T2時計/T2ヘアピン","5-4":"T2時計/T2お守り/T2ネックレス","5-5":"T2ネックレス/T2バッジ/T2お守り","7-1":"T3帽子/T3手袋/T3靴","7-2":"T3手袋/T3バッグ/T3帽子/","7-3":"T3靴/T3帽子/T3手袋","7-4":"T3バッグ/T3靴/T3ヘアピン","7-5":"T3バッジ/T3バッグ/T3帽子","8-1":"T3ヘアピン/T3バッジ/T3時計","8-2":"T3ヘアピン/T3時計/T3ネックレス","8-3":"T3お守り/T3時計/T3ヘアピン","8-4":"T3時計/T3お守り/T3ネックレス","8-5":"T3ネックレス/T3バッジ/T3お守り","10-1":"T4帽子/T4手袋/T4靴","10-2":"T4手袋/T4バッグ/T4帽子","10-3":"T4靴/T4帽子/T4手袋","10-4":"T4バッグ/T4靴/T4ヘアピン","10-5":"T4バッジ/T4バッグ/T4帽子","11-1":"T4ヘアピン/T4バッジ/T4時計","11-2":"T4ヘアピン/T4時計/T4ネックレス","11-3":"T4お守り/T4時計/T4ヘアピン","11-4":"T4時計/T4お守り/T4ネックレス","11-5":"T4ネックレス/T4バッジ/T4お守り","13-1":"T5帽子/T5手袋/T5靴","13-2":"T5手袋/T5バッジ/T5帽子","13-3":"T5靴/T5帽子/T5ヘアピン","13-4":"T5ヘアピン/T5靴/T5バッグ","13-5":"T5バッジ/T5手袋/T5帽子","14-1":"T5お守り/T5ネックレス/T5時計","14-2":"T5ヘアピン/T5時計/T5お守り","14-3":"T5バッグ/T5ネックレス/T5時計","14-4":"T5時計/T5バッジ/T5お守り","14-5":"T5ネックレス/T5ヘアピン/T5バッグ","16-1":"T6帽子/T6手袋/T6靴","16-2":"T6手袋/T6バッジ/T6帽子","16-3":"T6靴/T6帽子/T6ヘアピン","16-4":"T6ヘアピン/T6靴/T6バッグ","16-5":"T6バッジ/T6手袋/T6帽子","17-1":"T6お守り/T6ネックレス/T6時計","17-2":"T6ヘアピン/T6時計/T6お守り","17-3":"T6バッグ/T6ネックレス/T6時計","17-4":"T6時計/T6お守り/T6バッジ","17-5":"T6ネックレス/T6ヘアピン/T6バッグ","19-1":"T7帽子/T7手袋/T7靴","19-2":"T7手袋/T7バッジ/T7帽子","19-3":"T7靴/T7帽子/T7ヘアピン","19-4":"T7ヘアピン/T7靴/T7バッグ","19-5":"T7バッジ/T7手袋/T7帽子","20-1":"T7お守り/T7ネックレス/T7時計","20-2":"T7ヘアピン/T7時計/T7お守り","20-3":"T7バッグ/T7ネックレス/T7時計","20-4":"T7時計/T7お守り/T7バッジ","20-5":"T7ネックレス/T7ヘアピン/T7バッグ","22-1":"T8帽子/T8手袋/T8靴","22-2":"T8手袋/T8バッジ/T8帽子","22-3":"T8靴/T8帽子/T8ヘアピン","22-4":"T8ヘアピン/T8靴/T8バッグ","22-5":"T8バッジ/T8手袋/T8帽子","23-1":"T8お守り/T8ネックレス/T8時計","23-2":"T8ヘアピン/T8時計/T8お守り","23-3":"T8バッグ/T8ネックレス/T8時計","23-4":"T8時計/T8お守り/T8バッジ","23-5":"T8ネックレス/T8ヘアピン/T8バッグ","25-1":"T9帽子/T9手袋/T9靴","25-2":"T9手袋/T9バッジ/T9帽子","25-3":"T9靴/T9帽子/T9ヘアピン","25-4":"T9ヘアピン/T9バッジ/T9バッグ","25-5":"T9バッジ/T9手袋/T9帽子","26-1":"T9ネックレス/T9お守り/T9時計","26-2":"T9ヘアピン/T9時計/T9靴","26-3":"T9バッグ/T9お守り/T9時計","26-4":"T9時計/T9手袋/T9バッジ","26-5":"T9ネックレス/T9ヘアピン/T9バッグ","28-1":"T10帽子/T10手袋/T10靴","28-2":"T10手袋/T10バッジ/T10帽子","28-3":"T10靴/T10帽子/T10ヘアピン","28-4":"T10ヘアピン/T10バッジ/T10バッグ","28-5":"T10バッジ/T10手袋/T10帽子","29-1":"T10お守り/T10ネックレス/T10時計","29-2":"T10ヘアピン/T10時計/T10靴","29-3":"T10バッグ/T10お守り/T10時計","29-4":"T10時計/T10手袋/T10バッジ","29-5":"T10ネックレス/T10ヘアピン/T10バッグ"};
 
     function isIosSafari() { const ua = window.navigator.userAgent; return /iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/i.test(ua); }
+    function supportsImageClipboard() { return typeof ClipboardItem !== "undefined" && !!navigator.clipboard && typeof navigator.clipboard.write === "function"; }
+    function showCopySuccess() {
+        const btn = document.getElementById('copy-btn'); const old = btn.innerText;
+        btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745";
+        setTimeout(() => { btn.innerText = old; btn.style.backgroundColor = "#6c757d"; }, 2000);
+    }
+    function showCopyPreview(canvas) {
+        document.getElementById('preview-img').src = canvas.toDataURL("image/png");
+        document.getElementById('preview-modal').style.display = 'flex';
+    }
+    function canvasToBlob(canvas) {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error("Blob failed")); }, "image/png");
+        });
+    }
+    async function copyCanvasToClipboard(canvas) {
+        if (!supportsImageClipboard()) throw new Error("Clipboard image API unavailable");
+        const blob = await canvasToBlob(canvas);
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    }
     function initApp() {
         const tDiv = document.getElementById('target-inputs'); const iBody = document.getElementById('inventory-body'); const tHead = document.getElementById('table-head'); const rHead = document.getElementById('result-head');
         TIERS.forEach(t => { const th = document.createElement('th'); th.innerText = 'T' + t; tHead.appendChild(th); rHead.appendChild(th.cloneNode(true)); });
@@ -156,6 +183,9 @@
             });
             rB.innerHTML += r + `</tr>`;
         });
+        let hDeficit = `<tr class="summary-header"><td class="row-label">T別不足数合計</td>`;
+        TIERS.forEach(t => hDeficit += `<td>${tDeficits[t]}</td>`);
+        sB.innerHTML += hDeficit + `</tr>`;
         let bDiffs = {}; let hFinal = `<tr class="summary-header"><td class="row-label">ボックス考慮後</td>`;
         TIERS.forEach(t => { const v = tDeficits[t] + (parseInt(document.getElementById(`box-${t}`).value) || 0); bDiffs[t] = v; let cls = v < 0 ? "bg-red" : (v < 100 ? "bg-yellow" : "bg-green"); hFinal += `<td class="${cls}">${v}</td>`; });
         sB.innerHTML += hFinal + `</tr>`; document.getElementById('result-area').style.display = 'block'; localStorage.setItem(STORAGE_KEY, generateDataString()); generateRoadmap(snapshot, bDiffs);
@@ -197,27 +227,36 @@
     }
 
     async function generateCanvas() {
-        const target = document.getElementById('capture-target'); const table = document.getElementById('result-table'); target.classList.add('capture-mode');
-        const options = { backgroundColor: "#ffffff", scale: 2, useCORS: true, width: table.scrollWidth + 40, windowWidth: table.scrollWidth + 40 };
-        const canvas = await html2canvas(target, options); target.classList.remove('capture-mode'); return canvas;
+        const target = document.getElementById('capture-target'); const table = document.getElementById('result-table'); const captureWidth = table.scrollWidth + 40;
+        const options = {
+            backgroundColor: "#ffffff",
+            scale: 2,
+            useCORS: true,
+            width: captureWidth,
+            windowWidth: captureWidth,
+            onclone: (clonedDoc) => {
+                const clonedTarget = clonedDoc.getElementById('capture-target');
+                const clonedWrapper = clonedDoc.getElementById('table-wrapper');
+                clonedTarget.classList.add('capture-mode');
+                clonedTarget.style.setProperty('--capture-width', `${captureWidth}px`);
+                clonedWrapper.classList.add('capture-mode');
+            }
+        };
+        return html2canvas(target, options);
     }
 
     async function handleCopyAction() {
-        if (isIosSafari()) {
-            const canvas = await generateCanvas(); document.getElementById('preview-img').src = canvas.toDataURL("image/png"); document.getElementById('preview-modal').style.display = 'flex';
-        } else {
-            try {
-                const item = new ClipboardItem({
-                    "image/png": new Promise(async (resolve, reject) => {
-                        try {
-                            const canvas = await generateCanvas();
-                            canvas.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error("Blob failed")); }, "image/png");
-                        } catch (e) { reject(e); }
-                    })
-                });
-                await navigator.clipboard.write([item]);
-                const btn = document.getElementById('copy-btn'); const old = btn.innerText; btn.innerText = "コピー完了！"; btn.style.backgroundColor = "#28a745"; setTimeout(() => { btn.innerText = old; btn.style.backgroundColor = "#6c757d"; }, 2000);
-            } catch (err) { alert("コピーに失敗しました。HTTPS環境をご確認ください。"); }
+        let canvas = null;
+        try {
+            canvas = await generateCanvas();
+            await copyCanvasToClipboard(canvas);
+            showCopySuccess();
+        } catch (err) {
+            if (canvas && isIosSafari()) {
+                showCopyPreview(canvas);
+                return;
+            }
+            alert("コピーに失敗しました。HTTPS環境をご確認ください。");
         }
     }
 
