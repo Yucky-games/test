@@ -66,10 +66,10 @@
         .preview-guide { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 1.1rem; text-align: center; }
 
         /* キャプチャ用特殊クラス */
-        #capture-target.capture-mode { width: var(--capture-width, auto); max-width: none !important; box-sizing: border-box; }
+        #capture-target.capture-mode { width: var(--capture-card-width, auto); max-width: none !important; box-sizing: border-box; }
         #table-wrapper.capture-mode { overflow: visible !important; width: max-content !important; max-width: none !important; }
         #table-wrapper.capture-mode table { min-width: auto !important; width: 100% !important; }
-        #capture-target.capture-mode .recommendation-area { width: 100%; max-width: 100%; overflow: hidden; }
+        #capture-target.capture-mode .recommendation-area { width: var(--capture-content-width, 100%); max-width: var(--capture-content-width, 100%); overflow: hidden; }
         #capture-target.capture-mode .stage-flow { width: 100%; flex-direction: column; align-items: stretch; gap: 8px; }
         #capture-target.capture-mode .stage-box { display: block; width: 100%; box-sizing: border-box; white-space: normal; overflow-wrap: anywhere; }
     </style>
@@ -226,8 +226,16 @@
         document.getElementById('stage-list').innerHTML = proposed.slice(0,5).map((k, idx) => `<span class="stage-box">${["①", "②", "③", "④", "⑤"][idx]} ${k}（${MASTER_STAGE_DATA[k]}）</span>`).join(""); document.getElementById('recommendation-display').style.display = 'block';
     }
 
+    function measureCaptureTableWidth() {
+        const wrapper = document.getElementById('table-wrapper');
+        wrapper.classList.add('capture-mode');
+        const width = Math.ceil(wrapper.scrollWidth);
+        wrapper.classList.remove('capture-mode');
+        return width;
+    }
+
     async function generateCanvas() {
-        const target = document.getElementById('capture-target'); const table = document.getElementById('result-table'); const captureWidth = table.scrollWidth + 40;
+        const target = document.getElementById('capture-target'); const tableWidth = measureCaptureTableWidth(); const captureWidth = tableWidth + 40;
         const options = {
             backgroundColor: "#ffffff",
             scale: 2,
@@ -238,7 +246,8 @@
                 const clonedTarget = clonedDoc.getElementById('capture-target');
                 const clonedWrapper = clonedDoc.getElementById('table-wrapper');
                 clonedTarget.classList.add('capture-mode');
-                clonedTarget.style.setProperty('--capture-width', `${captureWidth}px`);
+                clonedTarget.style.setProperty('--capture-card-width', `${captureWidth}px`);
+                clonedTarget.style.setProperty('--capture-content-width', `${tableWidth}px`);
                 clonedWrapper.classList.add('capture-mode');
             }
         };
